@@ -29,7 +29,7 @@ ADAFRUIT_IO_KEY = 'your key goes here.'
 aio = Client(ADAFRUIT_IO_KEY)
 
 # Setup configs
-date = datetime.now()
+#date = datetime.now()
 
 # Main definitions
 def getCPUtemp():
@@ -88,7 +88,7 @@ while True:
         getCPUtemp()
         cels = float(getCPUtemperature())
         cpu_temp = cels_fahr(cels)
-        aio.send('green-house-cpu', cpu_temp)
+        aio.send('greenhouse-cpu-temp', cpu_temp)
     except:
         pass
 
@@ -98,8 +98,8 @@ while True:
         so except passes.
         """
         getDHT()
-        aio.send('green-house-temp', dht_temp)
-        aio.send('green-house-humidiy', humidity)
+        aio.send('greenhouse-temperature', dht_temp)
+        aio.send('greenhouse-humidity', humidity)
     except:
         pass
 
@@ -107,8 +107,8 @@ while True:
         """ Get solar panel voltage and current.
         """
         getBat()
-        aio.send('green-house-solar-volt', sol_volt_v)
-        aio.send('green-house-solar-current', sol_curr_ma)
+        aio.send('greenhouse-sol-volt', sol_volt_v)
+        aio.send('greenhouse-sol-current', sol_curr_ma)
     except:
         pass
 
@@ -116,8 +116,8 @@ while True:
         """ Get battery voltage and current.
         """
         getBat()
-        aio.send('green-house-bat-volt', bat_volt_v)
-        aio.send('green-house-bat-current', bat_curr_ma)
+        aio.send('greenhouse-bat-volt', bat_volt_v)
+        aio.send('greenhouse-bat-current', bat_curr_ma)
     except:
         pass
 
