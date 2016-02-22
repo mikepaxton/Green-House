@@ -146,5 +146,4 @@ while True:
             print('Ran Lux')
 
     time.sleep(300)
-else:
-    break
+
