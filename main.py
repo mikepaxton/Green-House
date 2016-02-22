@@ -7,34 +7,38 @@ The sensors which will be used are the DHT22 for green house temp and humidity. 
 INA219 for gathering the voltage and current input of the solar panels and the status
 of the batteries.
 The project will be using a Raspberry Pi for gathering the data and sending it out
-using feeds to io.adafruit.com for charting.  I'm using cron to initiate each 
-round of gathering and sending values.  This means there is no loop built into 
-program for it to run continuously.
+using feeds to io.adafruit.com for charting.
 Author:  Mike Paxton
 Modification date: 02/14/16
 """
 
-import datetime
+import time
 from Adafruit_IO import Client
 import os
 import Adafruit_DHT
 from Subfact_ina219 import INA219
-import logging
+from TSL2561 import TSL2561 as tsl
 
+# TODO: Incorporate logging into controls
+# TODO: Incorporate either mysql or sqlite3 database logging
+# TODO: Cleanup CPUtemp function and usage
+# TODO: Add light sensor to project
+# TODO: Find a logging website other than io.adafruit for greater logging capabilities.
+
+# Set verbose printing to screen
+verbose = False
 
 #  Initialize DHT sensor and define the RPi pin number.
 DHT_TYPE = Adafruit_DHT.DHT22
-DHT_PIN  = 23  # RPi pin number
+DHT_PIN  = 17  # RPi pin number
 
 # Initialize Adafruit IO.  Use the key that has been assigned to you on io.adafruit.com.
-ADAFRUIT_IO_KEY = ''
+ADAFRUIT_IO_KEY = '5b04798ef21d5ae145f4e2d6b10ae0c0a6c74ab8'
 aio = Client(ADAFRUIT_IO_KEY)
 print('Adafruit IO initalized!')
 
-# Setup configs
-#date = datetime.now()
 
-# Main definitions
+# Main Functions
 def getCPUtemp():
     """Function used to grab RPi CPU Temp and return CPU temperature as a character
     string"""
@@ -53,44 +57,44 @@ def getDHT():
     Temp is converted to Fahrenheit.
     """
     try:
-        global humidity, dht_temp
         humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
         if cels and humidity:
             dht_temp = cels_fahr(cels)
         else:
             dht_temp = 0
             humidity = 0
-            print('Unable to get DHT values!')
+            if verbose == True:
+                print('Unable to get DHT values!')
     finally:
-        pass
-    
+        return(dht_temp, humidity)
+
 
 def getSolar():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44']
     """
     for i2caddr in ['0x40']:
-        global sol_volt_v, sol_curr_ma
         ina = INA219(address=int(i2caddr,16))
         sol_bus_v = ina.getBusVoltage_V()
         sol_shunt_mv = ina.getShuntVoltage_mV()
         sol_curr_ma = ina.getCurrent_mA()
         sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
+    return(sol_volt_v, sol_curr_ma)
 
 def getBat():
     """ Gather INA219 sensor readings for Battery"""
     for i2caddr in ['0x41']:
-        global bat_volt_v, bat_curr_ma
         ina = INA219(address=int(i2caddr,16))
         bat_bus_v = ina.getBusVoltage_V()
         bat_shunt_mv = ina.getShuntVoltage_mV()
         bat_curr_ma = ina.getCurrent_mA()
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
+    return(bat_volt_v, bat_curr_ma)
 
 """ Main Procedure"""
 
-try:
-    
+while True:
+
     try:
         """ Get CPU temp and send it to aio.  There should be no errors so except just
         passes. The value is set to two decimal places.
@@ -100,35 +104,47 @@ try:
         cpu_temp = cels_fahr(cels)
         aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
     finally:
-        pass
-    
+        if verbose == True:
+            print('Ran DHT')
+
     try:
         """ Grab DHT's temp and humidity. Function continues to try getting readings
         so except passes.  The value is set to two decimal places.
         """
-        getDHT()
+        dht_temp, humidity = getDHT()
         aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
         aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
     finally:
-        print('Ran DHT')
-    
+        if verbose == True:
+            print('Ran DHT')
+
     try:
         """ Get solar panel voltage and current.  The value is set to two decimal places.
         """
-        getSolar()
+        sol_volt_v, sol_curr_ma = getSolar()
         aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
         aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
     finally:
-        print('Ran Solar')
-        
+        if verbose == True:
+            print('Ran Solar')
+
     try:
         """ Get battery voltage and current.  The value is set to two decimal places.
         """
-        getBat()
+        bat_volt_v, bat_curr_ma = getBat()
         aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
         aio.send('greenhouse-bat-current','{:.2f}'.format(bat_curr_ma))
     finally:
-        print('Ran Bat')
-        
-finally:
-    print('Done!')
+        if verbose == True:
+            print('Ran Bat')
+
+    try:
+        lux = int(tsl.readLux())
+        print lux
+    finally:
+        if verbose == True:
+            print('Ran Lux')
+
+    time.sleep(300)
+else:
+    break
