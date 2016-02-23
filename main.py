@@ -67,6 +67,7 @@ def dbUpdate():
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
+    print('Database connection info:', dbAddress, dbUser, dbPassword, dbName)
 
     date = datetime.datetime.now()
     c.execute("INSERT INTO sensor_data (date, dht_temp, dht_humidity, cpu_temp, "
