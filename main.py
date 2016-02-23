@@ -13,26 +13,28 @@ Modification date: 02/22/16
 """
 
 import time
+import datetime
 from Adafruit_IO import Client
 import Adafruit_DHT
 from Subfact_ina219 import INA219
 from TSL2561 import TSL2561
-import ConfigParser
+from ConfigParser import SafeConfigParser
 import os
+import MySQLdb
 
 # TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
-# TODO: Incorporate either mysql or sqlite3 database logging
 # TODO: Cleanup CPUtemp function and usage
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
+# TODO: Integrate MySQL into application
 
 
 # Configuration settings.  Using Configparser
-config = ConfigParser.ConfigParser()
+config = SafeConfigParser()
 config.read('config.cfg')
 
 # Get sensor updating interval
-interval = config.get('defaults', 'INTERVAL')
+interval = config.get('defaults', 'interval')
 
 # Verbose printing may be used for troubleshooting
 verbose = config.getboolean('defaults', 'verbose')
@@ -42,14 +44,36 @@ ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
 if verbose == True:
     print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
-    print('Adafruit IO initalized!')
+    print('Adafruit IO initialized!')
 
 # Get DHT Pin number from config and initialize sensor.
 DHT_TYPE = Adafruit_DHT.DHT22
-DHT_PIN = config.get('defaults', 'DHT_PIN')
+DHT_PIN = config.get('defaults', 'dht_pin')
 
 # Set TSL2561 Light sensor to tsl
 tsl = TSL2561()
+
+def dbUpdate():
+    """ Open a connection to mysql database using the MySQLdb library.  The database
+    can be either local or remote.  If remote you must change both the dbaddress and
+    the port number must be used. Changed the database connection information over to
+    the config file.  Note: dbPort is not implemented in code yet.
+    """
+    dbAddress = config.get('defaults', 'dbAddress')
+    dbUser = config.get('defaults', 'dbUser')
+    dbPassword = config.get('defaults', 'dbPassword')
+    dbName = config.get('defaults', 'dbName')
+    #dbPort = config.get('defaults', 'dbPort')
+    con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
+    c = con.cursor()
+
+    date = datetime.datetime.now()
+    c.execute("INSERT INTO weather (date, dht_temp, dht_humidity, cpu_temp, "
+              "solar_voltage, solar_current, battery_voltage, battery_current) VALUES ("
+              "%s,%s,%s,%s,%s,%s,%s,%s)", (date, dht_temp, humidity, cpu_temp,
+                                           sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
+    con.commit()
+    con.close()
 
 # Main Functions
 def getCPUtemp():
@@ -79,7 +103,7 @@ def getDHT():
             if verbose == True:
                 print('Unable to get DHT values!')
     finally:
-        return(dht_temp, humidity)
+        return dht_temp, humidity
 
 
 def getSolar():
@@ -92,7 +116,7 @@ def getSolar():
         sol_shunt_mv = ina.getShuntVoltage_mV()
         sol_curr_ma = ina.getCurrent_mA()
         sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
-    return(sol_volt_v, sol_curr_ma)
+    return sol_volt_v, sol_curr_ma
 
 def getBat():
     """ Gather INA219 sensor readings for Battery"""
@@ -102,7 +126,7 @@ def getBat():
         bat_shunt_mv = ina.getShuntVoltage_mV()
         bat_curr_ma = ina.getCurrent_mA()
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
-    return(bat_volt_v, bat_curr_ma)
+    return bat_volt_v, bat_curr_ma
 
 """ Main Procedure"""
 
@@ -156,10 +180,15 @@ while True:
 
     try:
         lux = int(tsl.readLux())
-        print lux
     finally:
         if verbose == True:
             print('Lux: ' + str(lux))
+
+    try:
+        dbUpdate()
+    finally:
+        if verbose == True:
+            print('Database Updated')
 
     time.sleep(float(interval))
 
