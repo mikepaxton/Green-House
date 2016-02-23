@@ -14,7 +14,6 @@ Modification date: 02/14/16
 
 import time
 from Adafruit_IO import Client
-import os
 import Adafruit_DHT
 from Subfact_ina219 import INA219
 from TSL2561 import TSL2561
@@ -32,6 +31,7 @@ config = ConfigParser.ConfigParser()
 config.read('config.cfg')
 # Verbose printing may be used for troubleshooting
 verbose = config.get('defaults', 'verbose')
+print verbose
 # Import Adafruit aio Key
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
