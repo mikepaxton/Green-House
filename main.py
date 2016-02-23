@@ -30,9 +30,8 @@ import os
 config = ConfigParser.ConfigParser()
 config.read('config.cfg')
 # Verbose printing may be used for troubleshooting
-verbose = config.get('defaults', 'verbose')
+verbose = config.getboolean('defaults', 'verbose')
 print verbose
-print type(verbose)
 # Import Adafruit aio Key
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
