@@ -63,12 +63,13 @@ def dbUpdate():
     dbUser = config.get('defaults', 'dbUser')
     dbPassword = config.get('defaults', 'dbPassword')
     dbName = config.get('defaults', 'dbName')
+    dbTable = config.get('defaults', 'dbTable')
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
 
     date = datetime.datetime.now()
-    c.execute("INSERT INTO weather (date, dht_temp, dht_humidity, cpu_temp, "
+    c.execute("INSERT INTO sensor_data (date, dht_temp, dht_humidity, cpu_temp, "
               "solar_voltage, solar_current, battery_voltage, battery_current) VALUES ("
               "%s,%s,%s,%s,%s,%s,%s,%s)", (date, dht_temp, humidity, cpu_temp,
                                            sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
