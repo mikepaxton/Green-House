@@ -59,14 +59,10 @@ def dbUpdate():
     the port number must be used. Changed the database connection information over to
     the config file.  Note: dbPort is not implemented in code yet.
     """
-    dbAddress = "localhost"
-    dbUser = "rpi"
-    dbPassword = "2Fast4uX2"
-    dbName = "greenhouse"
-    # dbAddress = config.get('defaults', 'dbAddress')
-    # dbUser = config.get('defaults', 'dbUser')
-    # dbPassword = config.get('defaults', 'dbPassword')
-    # dbName = config.get('defaults', 'dbName')
+    dbAddress = config.get('defaults', 'dbAddress')
+    dbUser = config.get('defaults', 'dbUser')
+    dbPassword = config.get('defaults', 'dbPassword')
+    dbName = config.get('defaults', 'dbName')
     # dbTable = config.get('defaults', 'dbTable')
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
@@ -79,7 +75,6 @@ def dbUpdate():
               "%s,%s,%s,%s,%s,%s,%s,%s)", (date, dht_temp, humidity, cpu_temp,
                                            sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
     con.commit()
-    con.close()
 
 # Main Functions
 def getCPUtemp():
