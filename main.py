@@ -17,25 +17,38 @@ from Adafruit_IO import Client
 import os
 import Adafruit_DHT
 from Subfact_ina219 import INA219
-from TSL2561 import TSL2561 as tsl
+from TSL2561 import TSL2561
+import ConfigParser
+import os
 
-# TODO: Incorporate logging into controls
+# TODO: Incorporate Python logging Module into controls
 # TODO: Incorporate either mysql or sqlite3 database logging
 # TODO: Cleanup CPUtemp function and usage
-# TODO: Add light sensor to project
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
+# TODO: Set Adafruit IO Key to be grabbed from a file.
 
-# Set verbose printing to screen
-verbose = False
+# Set verbose printing to console
+verbose = True
+
+tsl = TSL2561()
+
+# Configuration settings.  Using Configparser
+config = ConfigParser.ConfigParser()
+config.read('config.cfg')
+ADAFRUIT_IO_KEY = config.get('aio', 'aio_key')
+aio = Client(ADAFRUIT_IO_KEY)
+if verbose = True:
+    print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
+    print('Adafruit IO initalized!')
+
 
 #  Initialize DHT sensor and define the RPi pin number.
 DHT_TYPE = Adafruit_DHT.DHT22
 DHT_PIN  = 17  # RPi pin number
 
 # Initialize Adafruit IO.  Use the key that has been assigned to you on io.adafruit.com.
-ADAFRUIT_IO_KEY = '5b04798ef21d5ae145f4e2d6b10ae0c0a6c74ab8'
-aio = Client(ADAFRUIT_IO_KEY)
-print('Adafruit IO initalized!')
+#ADAFRUIT_IO_KEY = '5b04798ef21d5ae145f4e2d6b10ae0c0a6c74ab8'
+
 
 
 # Main Functions
@@ -105,7 +118,7 @@ while True:
         aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
     finally:
         if verbose == True:
-            print('Ran DHT')
+            print('CPU Temp: ' + str(cpu_temp))
 
     try:
         """ Grab DHT's temp and humidity. Function continues to try getting readings
@@ -116,7 +129,8 @@ while True:
         aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
     finally:
         if verbose == True:
-            print('Ran DHT')
+            print('DHT Temp: ' + str(dht_temp))
+            print('DHT Humidity: ' + str(humidity))
 
     try:
         """ Get solar panel voltage and current.  The value is set to two decimal places.
@@ -126,7 +140,8 @@ while True:
         aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
     finally:
         if verbose == True:
-            print('Ran Solar')
+            print('Solar Panel volts: ' + str(sol_volt_v))
+            print('Solar Panel current: ' + str(sol_curr_ma))
 
     try:
         """ Get battery voltage and current.  The value is set to two decimal places.
@@ -136,14 +151,15 @@ while True:
         aio.send('greenhouse-bat-current','{:.2f}'.format(bat_curr_ma))
     finally:
         if verbose == True:
-            print('Ran Bat')
+            print('Battery volts: ' + str(bat_volt_v))
+            print('Batter current: ' + str(bat_curr_ma))
 
     try:
         lux = int(tsl.readLux())
         print lux
     finally:
         if verbose == True:
-            print('Ran Lux')
+            print('Lux: ' + str(lux))
 
     time.sleep(300)
 
