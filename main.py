@@ -161,5 +161,5 @@ while True:
         if verbose == True:
             print('Lux: ' + str(lux))
 
-    time.sleep(interval)
+    time.sleep(float(interval))
 
