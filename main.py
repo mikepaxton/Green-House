@@ -25,31 +25,24 @@ import os
 # TODO: Incorporate either mysql or sqlite3 database logging
 # TODO: Cleanup CPUtemp function and usage
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
-# TODO: Set Adafruit IO Key to be grabbed from a file.
 
-# Set verbose printing to console
-verbose = True
-
-tsl = TSL2561()
 
 # Configuration settings.  Using Configparser
 config = ConfigParser.ConfigParser()
 config.read('config.cfg')
-ADAFRUIT_IO_KEY = config.get('aio', 'aio_key')
+# Verbose printing may be used for troubleshooting
+verbose = config.get('defaults', 'verbose')
+# Import Adafruit aio Key
+ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
-if verbose = True:
+if verbose == True:
     print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
     print('Adafruit IO initalized!')
-
-
-#  Initialize DHT sensor and define the RPi pin number.
+# Get DHT Pin number from config and initialize sensor.
 DHT_TYPE = Adafruit_DHT.DHT22
-DHT_PIN  = 17  # RPi pin number
-
-# Initialize Adafruit IO.  Use the key that has been assigned to you on io.adafruit.com.
-#ADAFRUIT_IO_KEY = '5b04798ef21d5ae145f4e2d6b10ae0c0a6c74ab8'
-
-
+DHT_PIN = config.get('defaults', 'DHT_PIN')
+# Set TSL2561 Light sensor to tsl
+tsl = TSL2561()
 
 # Main Functions
 def getCPUtemp():
