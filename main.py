@@ -9,7 +9,7 @@ of the batteries.
 The project will be using a Raspberry Pi for gathering the data and sending it out
 using feeds to io.adafruit.com for charting.
 Author:  Mike Paxton
-Modification date: 02/14/16
+Modification date: 02/22/16
 """
 
 import time
@@ -20,6 +20,7 @@ from TSL2561 import TSL2561
 import ConfigParser
 import os
 
+# TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Incorporate either mysql or sqlite3 database logging
 # TODO: Cleanup CPUtemp function and usage
@@ -29,18 +30,24 @@ import os
 # Configuration settings.  Using Configparser
 config = ConfigParser.ConfigParser()
 config.read('config.cfg')
+
+# Get sensor updating interval
+interval = config.get('defaults', 'INTERVAL')
+
 # Verbose printing may be used for troubleshooting
 verbose = config.getboolean('defaults', 'verbose')
-print verbose
+
 # Import Adafruit aio Key
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
 if verbose == True:
     print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
     print('Adafruit IO initalized!')
+
 # Get DHT Pin number from config and initialize sensor.
 DHT_TYPE = Adafruit_DHT.DHT22
 DHT_PIN = config.get('defaults', 'DHT_PIN')
+
 # Set TSL2561 Light sensor to tsl
 tsl = TSL2561()
 
@@ -154,5 +161,5 @@ while True:
         if verbose == True:
             print('Lux: ' + str(lux))
 
-    time.sleep(300)
+    time.sleep(interval)
 
