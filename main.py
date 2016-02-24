@@ -17,13 +17,13 @@ import datetime
 from Adafruit_IO import Client
 import Adafruit_DHT
 from Subfact_ina219 import INA219
-from TSL2561 import TSL2561 as tsl
+from TSL2561 import TSL2561
 from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
 
 # Set TSL2561 Light sensor to tsl
-#tsl = TSL2561()
+tsl = TSL2561()
 
 # TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
