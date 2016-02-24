@@ -28,7 +28,7 @@ tsl = TSL2561()
 # TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
-# TODO: Work with the TSL2561 light sensor for better data
+# TODO: Work with the TSL2561 light sensor to check for data accuracy
 
 
 # Configuration settings.  Using Configparser
@@ -69,13 +69,14 @@ def dbUpdate():
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
-    print('Database connection info:', dbAddress, dbUser, dbPassword, dbName)
 
     date = datetime.datetime.now()
     c.execute("INSERT INTO sensor_data (date, dht_temp, dht_humidity, cpu_temp, "
-              "solar_voltage, solar_current, battery_voltage, battery_current) VALUES ("
-              "%s,%s,%s,%s,%s,%s,%s,%s)", (date, dht_temp, humidity, cpu_temp,
-                                           sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
+              "solar_voltage, solar_current, battery_voltage, battery_current, lux, "
+              "ir) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+              (date, dht_temp, humidity, cpu_temp, sol_volt_v, sol_curr_ma,
+               bat_volt_v, bat_curr_ma, lux, ir))
+
     con.commit()
     con.close()
 
@@ -185,9 +186,11 @@ while True:
         """ Get the lux value from TSL2561 sensor.
         """
         lux = int(tsl.readLux())
+        ir = int(tsl.readIR())
     finally:
         if verbose == True:
             print('Lux: ' + str(lux))
+            print('IR: ' + str(ir))
 
     if mysqlUpdate == True:
         """ Check config file to see if we are updating the database.
