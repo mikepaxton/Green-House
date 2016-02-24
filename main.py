@@ -17,7 +17,7 @@ import datetime
 from Adafruit_IO import Client
 import Adafruit_DHT
 from Subfact_ina219 import INA219
-import TSL2561 as tsl
+from TSL2561 import TSL2561 as tsl
 from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
