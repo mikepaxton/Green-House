@@ -51,7 +51,7 @@ DHT_TYPE = Adafruit_DHT.DHT22
 DHT_PIN = config.get('defaults', 'dht_pin')
 
 # Check if using MySQL database in config file.
-mysqlUpdate = config.get('defaults', 'mysqlUpdate')
+mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate')
 
 # Set TSL2561 Light sensor to tsl
 tsl = TSL2561()
