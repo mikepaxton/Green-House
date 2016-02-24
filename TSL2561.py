@@ -14,9 +14,9 @@ from Adafruit_I2C import Adafruit_I2C
 # TODO: Strip out values into constants.
 
 class TSL2561:
-    i2c = None
+    #i2c = None
 
-    def __init__(self, address=0x39, debug=0, pause=0.8):
+    def __init__(self, address=0x39, debug=1, pause=0.8):
         self.i2c = Adafruit_I2C(address)
         self.address = address
         self.pause = pause
