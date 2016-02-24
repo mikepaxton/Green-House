@@ -50,20 +50,23 @@ if verbose == True:
 DHT_TYPE = Adafruit_DHT.DHT22
 DHT_PIN = config.get('defaults', 'dht_pin')
 
+# Check if using MySQL database in config file.
+mysqlUpdate = config.get('defaults', 'mysqlUpdate')
+
 # Set TSL2561 Light sensor to tsl
 tsl = TSL2561()
 
 def dbUpdate():
     """ Open a connection to mysql database using the MySQLdb library.  The database
     can be either local or remote.  If remote you must change both the dbaddress and
-    the port number must be used. Changed the database connection information over to
-    the config file.  Note: dbPort is not implemented in code yet.
+    the port number to that of remote. Changed the database connection information
+    over to the config file.  Note: dbPort is not implemented in code yet.
     """
     dbAddress = config.get('defaults', 'dbAddress')
     dbUser = config.get('defaults', 'dbUser')
     dbPassword = config.get('defaults', 'dbPassword')
     dbName = config.get('defaults', 'dbName')
-    # dbTable = config.get('defaults', 'dbTable')
+    #dbTable = config.get('defaults', 'dbTable')
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
@@ -185,11 +188,13 @@ while True:
         if verbose == True:
             print('Lux: ' + str(lux))
 
-    try:
+    if mysqlUpdate == True:
         dbUpdate()
-    finally:
         if verbose == True:
             print('Database Updated')
+    else:
+        if verbose == True:
+            print('Database Update Skipped')
 
     time.sleep(float(interval))
 
