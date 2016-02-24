@@ -26,7 +26,7 @@ import MySQLdb
 # TODO: Incorporate Python logging Module into controls
 # TODO: Cleanup CPUtemp function and usage
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
-# TODO: Integrate MySQL into application
+# TODO: Work with the TSL2561 light sensor for better data
 
 
 # Configuration settings.  Using Configparser
@@ -66,7 +66,6 @@ def dbUpdate():
     dbUser = config.get('defaults', 'dbUser')
     dbPassword = config.get('defaults', 'dbPassword')
     dbName = config.get('defaults', 'dbName')
-    #dbTable = config.get('defaults', 'dbTable')
     #dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
@@ -78,6 +77,7 @@ def dbUpdate():
               "%s,%s,%s,%s,%s,%s,%s,%s)", (date, dht_temp, humidity, cpu_temp,
                                            sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
     con.commit()
+    con.close()
 
 # Main Functions
 def getCPUtemp():
