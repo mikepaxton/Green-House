@@ -1,5 +1,6 @@
 import MySQLdb
 import datetime
+import time
 
 dht_temp = 100
 humidity = 50
@@ -25,3 +26,5 @@ while True:
                                            sol_volt_v, sol_curr_ma, bat_volt_v, bat_curr_ma))
 
     con.commit()
+
+    time.sleep(5)
