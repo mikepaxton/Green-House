@@ -17,14 +17,16 @@ import datetime
 from Adafruit_IO import Client
 import Adafruit_DHT
 from Subfact_ina219 import INA219
-from TSL2561 import TSL2561
+import TSL2561 as tsl
 from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
 
+# Set TSL2561 Light sensor to tsl
+#tsl = TSL2561()
+
 # TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
-# TODO: Cleanup CPUtemp function and usage
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
 # TODO: Work with the TSL2561 light sensor for better data
 
@@ -53,8 +55,6 @@ DHT_PIN = config.get('defaults', 'dht_pin')
 # Check if using MySQL database in config file.
 mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate')
 
-# Set TSL2561 Light sensor to tsl
-tsl = TSL2561()
 
 def dbUpdate():
     """ Open a connection to mysql database using the MySQLdb library.  The database
@@ -137,8 +137,7 @@ def getBat():
 while True:
 
     try:
-        """ Get CPU temp and send it to aio.  There should be no errors so except just
-        passes. The value is set to two decimal places.
+        """ Get CPU temp and send it to aio.  The value is set to two decimal places.
         """
         getCPUtemp()
         cels = float(getCPUtemp())
@@ -183,12 +182,16 @@ while True:
             print('Batter current: ' + str(bat_curr_ma))
 
     try:
+        """ Get the lux value from TSL2561 sensor.
+        """
         lux = int(tsl.readLux())
     finally:
         if verbose == True:
             print('Lux: ' + str(lux))
 
     if mysqlUpdate == True:
+        """ Check config file to see if we are updating the database.
+        """
         dbUpdate()
         if verbose == True:
             print('Database Updated')
