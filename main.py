@@ -38,13 +38,13 @@ config.read('config.cfg')
 # Get sensor updating interval
 interval = config.get('defaults', 'interval')
 
-# Verbose printing may be used for troubleshooting
-verbose = config.getboolean('defaults', 'verbose')
+# debug printing may be used for troubleshooting
+debug = config.getboolean('defaults', 'debug')
 
 # Import Adafruit aio Key
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
 aio = Client(ADAFRUIT_IO_KEY)
-if verbose == True:
+if debug == True:
     print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
     print('Adafruit IO initialized!')
 
@@ -105,7 +105,7 @@ def getDHT():
         else:
             dht_temp = 0
             humidity = 0
-            if verbose == True:
+            if debug == True:
                 print('Unable to get DHT values!')
     finally:
         return dht_temp, humidity
@@ -145,7 +145,7 @@ while True:
         cpu_temp = cels_fahr(cels)
         aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
     finally:
-        if verbose == True:
+        if debug == True:
             print('CPU Temp: ' + str(cpu_temp))
 
     try:
@@ -156,7 +156,7 @@ while True:
         aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
         aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
     finally:
-        if verbose == True:
+        if debug == True:
             print('DHT Temp: ' + str(dht_temp))
             print('DHT Humidity: ' + str(humidity))
 
@@ -167,7 +167,7 @@ while True:
         aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
         aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
     finally:
-        if verbose == True:
+        if debug == True:
             print('Solar Panel volts: ' + str(sol_volt_v))
             print('Solar Panel current: ' + str(sol_curr_ma))
 
@@ -178,7 +178,7 @@ while True:
         aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
         aio.send('greenhouse-bat-current','{:.2f}'.format(bat_curr_ma))
     finally:
-        if verbose == True:
+        if debug == True:
             print('Battery volts: ' + str(bat_volt_v))
             print('Batter current: ' + str(bat_curr_ma))
 
@@ -188,7 +188,7 @@ while True:
         lux = int(tsl.readLux())
         ir = int(tsl.readIR())
     finally:
-        if verbose == True:
+        if debug == True:
             print('Lux: ' + str(lux))
             print('IR: ' + str(ir))
 
@@ -196,10 +196,10 @@ while True:
         """ Check config file to see if we are updating the database.
         """
         dbUpdate()
-        if verbose == True:
+        if debug == True:
             print('Database Updated')
     else:
-        if verbose == True:
+        if debug == True:
             print('Database Update Skipped')
 
     time.sleep(float(interval))
