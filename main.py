@@ -22,39 +22,30 @@ from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
 
-# Set TSL2561 Light sensor to tsl
-tsl = TSL2561()
-
 # TODO: Create a LCD conrtol interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities.
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 
 
-# Configuration settings.  Using Configparser
+# Global stuff
 config = SafeConfigParser()
 config.read('config.cfg')
-
-# Get sensor updating interval
-interval = config.get('defaults', 'interval')
-
-# debug printing may be used for troubleshooting
-debug = config.getboolean('defaults', 'debug')
-
-# Import Adafruit aio Key
-ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')
+interval = config.get('defaults', 'interval')              # Get sensor updating interval
+debug = config.getboolean('defaults', 'debug')             # debug print to console
+ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')        # Import Adafruit aio Key
 aio = Client(ADAFRUIT_IO_KEY)
+DHT_TYPE = Adafruit_DHT.DHT22                              # Get DHT Pin number
+DHT_PIN = config.get('defaults', 'dht_pin')
+mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate') # Check if using MySQL database
+tsl = TSL2561()
+
+# Debug config file information
 if debug == True:
     print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
-    print('Adafruit IO initialized!')
-
-# Get DHT Pin number from config and initialize sensor.
-DHT_TYPE = Adafruit_DHT.DHT22
-DHT_PIN = config.get('defaults', 'dht_pin')
-
-# Check if using MySQL database in config file.
-mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate')
-
+    print('DHT pin used: ', DHT_PIN)
+    print('Using Database: ', mysqlUpdate)
+    print('Update interval in seconds: ', interval)
 
 def dbUpdate():
     """ Open a connection to mysql database using the MySQLdb library.  The database
@@ -187,6 +178,7 @@ while True:
         """
         lux = int(tsl.readLux())
         ir = int(tsl.readIR())
+
     finally:
         if debug == True:
             print('Lux: ' + str(lux))
