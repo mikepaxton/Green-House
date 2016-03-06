@@ -51,10 +51,10 @@ def checkDebug(message):
 
 
 # Debug config file information
-checkDebug('Adafruit aio key: ' + ADAFRUIT_IO_KEY)
-checkDebug('DHT pin used: ' + DHT_PIN)
-checkDebug('Using Database: ' + mysqlUpdate)
-checkDebug('Update interval in seconds: ' + interval)
+checkDebug('Adafruit aio key: ' + str(ADAFRUIT_IO_KEY))
+checkDebug('DHT pin used: ' + str(DHT_PIN))
+checkDebug('Using Database: ' + str(mysqlUpdate))
+checkDebug('Update interval in seconds: ' + str(interval))
 
 
 def dbUpdate():
