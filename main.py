@@ -1,6 +1,6 @@
 #!/user/bin/python2
-""" This is my Green House Project which takes what I learned from my SolarPi
-Project.  The purpose of this project is control the workings of my green house by
+""" This is my Green House Project which takes what I've learned from my SolarPi
+Project.  The purpose of this project is to control the workings of my green house by
 taking various sensor readings then using those readings to control the internal
 temperature and humidity of the green house.
 The sensors which will be used are the DHT22 for green house temp and humidity. The
@@ -9,7 +9,7 @@ of the batteries.
 The project will be using a Raspberry Pi for gathering the data and sending it out
 using feeds to io.adafruit.com for charting.
 Author:  Mike Paxton
-Modification date: 02/22/16
+Modification date: 03/05/16
 """
 
 import time
@@ -22,10 +22,12 @@ from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
 
-# TODO: Create a LCD conrtol interface using tkinter or pygame
+# TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
-# TODO: Find a logging website other than io.adafruit for greater logging capabilities.
+# TODO: Find a logging website other than io.adafruit for greater logging capabilities
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
+# TODO: Make dbPort functional
+# TODO: Incorporate two fans into code which should kick on when temp get to high
 
 
 # Global stuff
@@ -39,13 +41,21 @@ DHT_TYPE = Adafruit_DHT.DHT22                              # Get DHT Pin number
 DHT_PIN = config.get('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate') # Check if using MySQL database
 tsl = TSL2561()
+temp_threshold = config.get('defaults', 'temp_threshold')
+temp_norm = config.get('defaults', 'temp_norm')
+
+
+def checkDebug(message):
+    if debug == True:
+        print(message)
+
 
 # Debug config file information
-if debug == True:
-    print('Adafruit aio key: ', ADAFRUIT_IO_KEY)
-    print('DHT pin used: ', DHT_PIN)
-    print('Using Database: ', mysqlUpdate)
-    print('Update interval in seconds: ', interval)
+checkDebug('Adafruit aio key: ' + ADAFRUIT_IO_KEY)
+checkDebug('DHT pin used: ' + DHT_PIN)
+checkDebug('Using Database: ' + mysqlUpdate)
+checkDebug('Update interval in seconds: ' + interval)
+
 
 def dbUpdate():
     """ Open a connection to mysql database using the MySQLdb library.  The database
@@ -71,6 +81,7 @@ def dbUpdate():
     con.commit()
     con.close()
 
+
 # Main Functions
 def getCPUtemp():
     """Function used to grab RPi CPU Temp and return CPU temperature as a character
@@ -78,10 +89,12 @@ def getCPUtemp():
     res = os.popen('vcgencmd measure_temp').readline()
     return(res.replace("temp=","").replace("'C\n",""))
 
+
 def cels_fahr(cels):
     """Function takes in celsius temperature and returns temp in Fahrenheit"""
     temp = cels * 9.0 / 5 + 32
     return(temp)
+
 
 def getDHT():
     """ Attempt to get sensor reading of DHT.  If it is unable to it will continue
@@ -96,8 +109,7 @@ def getDHT():
         else:
             dht_temp = 0
             humidity = 0
-            if debug == True:
-                print('Unable to get DHT values!')
+            checkDebug('Unable to get DHT values!')
     finally:
         return dht_temp, humidity
 
@@ -114,6 +126,7 @@ def getSolar():
         sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
     return sol_volt_v, sol_curr_ma
 
+
 def getBat():
     """ Gather INA219 sensor readings for Battery"""
     for i2caddr in ['0x41']:
@@ -124,8 +137,8 @@ def getBat():
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
     return bat_volt_v, bat_curr_ma
 
-""" Main Procedure"""
 
+""" Main Loop"""
 while True:
 
     try:
@@ -136,8 +149,7 @@ while True:
         cpu_temp = cels_fahr(cels)
         aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
     finally:
-        if debug == True:
-            print('CPU Temp: ' + str(cpu_temp))
+        checkDebug('CPU Temp: ' + str(cpu_temp))
 
     try:
         """ Grab DHT's temp and humidity. Function continues to try getting readings
@@ -147,9 +159,8 @@ while True:
         aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
         aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
     finally:
-        if debug == True:
-            print('DHT Temp: ' + str(dht_temp))
-            print('DHT Humidity: ' + str(humidity))
+        checkDebug('DHT Temp: ' + str(dht_temp))
+        checkDebug('DHT Humidity: ' + str(humidity))
 
     try:
         """ Get solar panel voltage and current.  The value is set to two decimal places.
@@ -194,5 +205,10 @@ while True:
         if debug == True:
             print('Database Update Skipped')
 
+    if dht_temp >= temp_threshold:
+
+
+
     time.sleep(float(interval))
+
 
