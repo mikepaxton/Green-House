@@ -205,8 +205,7 @@ while True:
         if debug == True:
             print('Database Update Skipped')
 
-    if dht_temp >= temp_threshold:
-
+    #if dht_temp >= temp_threshold:
 
 
     time.sleep(float(interval))
