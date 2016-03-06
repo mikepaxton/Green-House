@@ -169,9 +169,8 @@ while True:
         aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
         aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
     finally:
-        if debug == True:
-            print('Solar Panel volts: ' + str(sol_volt_v))
-            print('Solar Panel current: ' + str(sol_curr_ma))
+        checkDebug('Solar Panel volts: ' + str(sol_volt_v))
+        checkDebug('Solar Panel current: ' + str(sol_curr_ma))
 
     try:
         """ Get battery voltage and current.  The value is set to two decimal places.
@@ -180,9 +179,8 @@ while True:
         aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
         aio.send('greenhouse-bat-current','{:.2f}'.format(bat_curr_ma))
     finally:
-        if debug == True:
-            print('Battery volts: ' + str(bat_volt_v))
-            print('Batter current: ' + str(bat_curr_ma))
+        checkDebug('Battery volts: ' + str(bat_volt_v))
+        checkDebug('Batter current: ' + str(bat_curr_ma))
 
     try:
         """ Get the lux value from TSL2561 sensor.
@@ -191,19 +189,16 @@ while True:
         ir = int(tsl.readIR())
 
     finally:
-        if debug == True:
-            print('Lux: ' + str(lux))
-            print('IR: ' + str(ir))
+        checkDebug('Lux: ' + str(lux))
+        checkDebug('IR: ' + str(ir))
 
     if mysqlUpdate == True:
         """ Check config file to see if we are updating the database.
         """
         dbUpdate()
-        if debug == True:
-            print('Database Updated')
+        checkDebug('Database Updated')
     else:
-        if debug == True:
-            print('Database Update Skipped')
+        checkDebug('Database Update Skipped')
 
     #if dht_temp >= temp_threshold:
 
