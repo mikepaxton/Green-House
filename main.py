@@ -21,6 +21,8 @@ from TSL2561 import TSL2561
 from ConfigParser import SafeConfigParser
 import os
 import MySQLdb
+import RPi.GPIO as GPIO
+
 
 # TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
@@ -41,11 +43,20 @@ DHT_TYPE = Adafruit_DHT.DHT22                              # Get DHT Pin number
 DHT_PIN = config.get('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate') # Check if using MySQL database
 tsl = TSL2561()
-temp_threshold = config.get('defaults', 'temp_threshold')
-temp_norm = config.get('defaults', 'temp_norm')
+temp_threshold = config.get('defaults', 'fan_on')
+temp_norm = config.get('defaults', 'fan_off')
+
+GPIO.setmode(GPIO.BCM)
+pinList = [12]
+for i in pinList:
+    GPIO.setup(i, GPIO.OUT)
+    GPIO.output(i, GPIO.HIGH)
 
 
 def checkDebug(message):
+    """ Check for debug status on config file.
+    Function can be called to print debug message.
+    """
     if debug == True:
         print(message)
 
@@ -200,7 +211,14 @@ while True:
     else:
         checkDebug('Database Update Skipped')
 
-    #if dht_temp >= temp_threshold:
+    try:
+        GPIO.output(12, GPIO.LOW)
+        checkDebug('Pin 12 ON')
+        time.sleep(5)
+        GPIO.cleanup()
+        checkDebug('Pin 12 OFF')
+    except:
+        print('GPIO Pin 12 Did not work!')
 
 
     time.sleep(float(interval))
