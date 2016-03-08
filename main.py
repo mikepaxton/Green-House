@@ -46,11 +46,10 @@ tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
-GPIO.setmode(GPIO.BCM)
-pinList = [12]
-for i in pinList:
-    GPIO.setup(i, GPIO.OUT)
-    GPIO.output(i, GPIO.HIGH)
+GPIO.setmode(GPIO.BOARD)
+fans = [6, 12]
+for i in fans:
+    GPIO.setup(i, GPIO.OUT, initial=GPIO.HIGH)
 
 
 def checkDebug(message):
