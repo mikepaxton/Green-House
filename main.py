@@ -47,7 +47,6 @@ temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
 # Setup and initiate fans on GPIO pins.  Fans are connected to a relay board.
-GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 fan1 = [4]
 GPIO.setup(fan1, GPIO.OUT)
@@ -221,4 +220,5 @@ while True:
 
     time.sleep(float(interval))
 
-
+else:
+    GPIO.cleanup()
