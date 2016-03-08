@@ -67,6 +67,8 @@ checkDebug('Adafruit aio key: ' + str(ADAFRUIT_IO_KEY))
 checkDebug('DHT pin used: ' + str(DHT_PIN))
 checkDebug('Using Database: ' + str(mysqlUpdate))
 checkDebug('Update interval in seconds: ' + str(interval))
+checkDebug('Fan ON Temp: ' + str(temp_threshold))
+checkDebug('Fan OFF Temp: ' + str(temp_norm))
 
 
 def dbUpdate():
