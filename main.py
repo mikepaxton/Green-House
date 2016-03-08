@@ -214,11 +214,9 @@ while True:
         GPIO.output(4, GPIO.LOW)
         checkDebug('Fan 1 ON')
         time.sleep(5)
-        GPIO.cleanup()
         checkDebug('Fan 1 OFF')
-    except:
-        print('Fan 1 Did not work!')
-        GPIO.cleanup()
+#    except:
+#        print('Fan 1 Did not work!')
 
 
     time.sleep(float(interval))
