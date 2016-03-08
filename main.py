@@ -213,6 +213,7 @@ while True:
     GPIO.output(4, GPIO.LOW)
     checkDebug('Fan 1 ON')
     time.sleep(5)
+    GPIO.output(4, GPIO.HIGH)
     checkDebug('Fan 1 OFF')
 
 
