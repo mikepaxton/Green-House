@@ -46,9 +46,9 @@ tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
-# Setup and initiate fans on GPIO pins.  Fans are connected to a relay board.
+# Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
-fans = [4, 5]
+fans = [4]
 for i in fans:
     GPIO.setup(i, GPIO.OUT)
     GPIO.output(i, GPIO.HIGH)
