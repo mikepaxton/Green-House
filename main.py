@@ -48,9 +48,10 @@ temp_norm = config.get('defaults', 'fan_off')
 
 # Setup and initiate fans on GPIO pins.  Fans are connected to a relay board.
 GPIO.setmode(GPIO.BCM)
-fan1 = [4]
-GPIO.setup(fan1, GPIO.OUT)
-GPIO.output(fan1, GPIO.HIGH)
+fans = [4, 5]
+for i in fans:
+    GPIO.setup(i, GPIO.OUT)
+    GPIO.output(i, GPIO.HIGH)
 
 
 def checkDebug(message):
@@ -212,11 +213,13 @@ try:
         else:
             checkDebug('Database Update Skipped')
 
-        GPIO.output(fan1, GPIO.LOW)
-        checkDebug('Fan 1 ON')
-        time.sleep(5)
-        GPIO.output(fan1, GPIO.HIGH)
-        checkDebug('Fan 1 OFF')
+        if dht_temp >= temp_threshold or dht_temp > temp_norm:
+            GPIO.output(fans, GPIO.LOW)
+            checkDebug('Fans are ON')
+        else:
+            GPIO.output(fans, GPIO.HIGH)
+            checkDebug('Fan are OFF')
+
 
         time.sleep(float(interval))
 except KeyboardInterrupt:
