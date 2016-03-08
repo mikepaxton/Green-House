@@ -47,7 +47,7 @@ temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
 GPIO.setmode(GPIO.BOARD)
-fans = [12]
+fans = [4]
 for i in fans:
     GPIO.setup(i, GPIO.OUT)
     GPIO.output(i, GPIO.HIGH)
