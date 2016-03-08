@@ -46,7 +46,7 @@ tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 fans = [4]
 for i in fans:
     GPIO.setup(i, GPIO.OUT)
@@ -218,6 +218,7 @@ while True:
         checkDebug('Pin 12 OFF')
     except:
         print('GPIO Pin 12 Did not work!')
+        GPIO.cleanup()
 
 
     time.sleep(float(interval))
