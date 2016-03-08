@@ -43,8 +43,8 @@ DHT_PIN = config.get('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('defaults',
                                 'mysqlUpdate')  # Check if using MySQL database
 tsl = TSL2561()
-temp_threshold = config.get('defaults', 'fan_on')
-temp_norm = config.get('defaults', 'fan_off')
+temp_threshold = config.get('defaults', int('fan_on'))
+temp_norm = config.get('defaults', int('fan_off'))
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
@@ -215,13 +215,12 @@ try:
         else:
             checkDebug('Database Update Skipped')
 
-        if dht_temp >= int(temp_threshold) or dht_temp > int(temp_norm):
+        if dht_temp >= temp_threshold or dht_temp > temp_norm:
             GPIO.output(fans, GPIO.LOW)
             checkDebug('Fans are ON')
         else:
             GPIO.output(fans, GPIO.HIGH)
             checkDebug('Fan are OFF')
-            print type(temp_threshold)
 
 
         time.sleep(float(interval))
