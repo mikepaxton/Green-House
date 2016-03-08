@@ -210,13 +210,10 @@ while True:
     else:
         checkDebug('Database Update Skipped')
 
-    try:
-        GPIO.output(4, GPIO.LOW)
-        checkDebug('Fan 1 ON')
-        time.sleep(5)
-        checkDebug('Fan 1 OFF')
-#    except:
-#        print('Fan 1 Did not work!')
+    GPIO.output(4, GPIO.LOW)
+    checkDebug('Fan 1 ON')
+    time.sleep(5)
+    checkDebug('Fan 1 OFF')
 
 
     time.sleep(float(interval))
