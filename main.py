@@ -222,3 +222,4 @@ while True:
 
 else:
     GPIO.cleanup()
+    checkDebug('GPIO.cleanup() ran!')
