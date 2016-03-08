@@ -49,8 +49,8 @@ temp_norm = config.get('defaults', 'fan_off')
 GPIO.setmode(GPIO.BOARD)
 fans = [6, 12]
 for i in fans:
-    GPIO.setup(i, GPIO.OUT, initial=GPIO.HIGH)
-
+    GPIO.setup(i, GPIO.OUT)
+    GPIO.output(i, GPIO.HIGH)
 
 def checkDebug(message):
     """ Check for debug status on config file.
