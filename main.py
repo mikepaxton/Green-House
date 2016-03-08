@@ -45,6 +45,7 @@ mysqlUpdate = config.getboolean('defaults',
 tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
+print type(temp_threshold)
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
