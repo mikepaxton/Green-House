@@ -211,13 +211,13 @@ while True:
         checkDebug('Database Update Skipped')
 
     try:
-        GPIO.output(12, GPIO.LOW)
-        checkDebug('Pin 12 ON')
+        GPIO.output(4, GPIO.LOW)
+        checkDebug('Fan 1 ON')
         time.sleep(5)
         GPIO.cleanup()
-        checkDebug('Pin 12 OFF')
+        checkDebug('Fan 1 OFF')
     except:
-        print('GPIO Pin 12 Did not work!')
+        print('Fan 1 Did not work!')
         GPIO.cleanup()
 
 
