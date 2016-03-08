@@ -46,11 +46,13 @@ tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
 
+# Setup and initiate fans on GPIO pins.  Fans are connected to a relay board.
+GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
-fans = [4]
-for i in fans:
-    GPIO.setup(i, GPIO.OUT)
-    GPIO.output(i, GPIO.HIGH)
+fan1 = [4]
+GPIO.setup(fan1, GPIO.OUT)
+GPIO.output(fan1, GPIO.HIGH)
+
 
 def checkDebug(message):
     """ Check for debug status on config file.
@@ -210,10 +212,10 @@ while True:
     else:
         checkDebug('Database Update Skipped')
 
-    GPIO.output(4, GPIO.LOW)
+    GPIO.output(fan1, GPIO.LOW)
     checkDebug('Fan 1 ON')
     time.sleep(5)
-    GPIO.output(4, GPIO.HIGH)
+    GPIO.output(fan1, GPIO.HIGH)
     checkDebug('Fan 1 OFF')
 
 

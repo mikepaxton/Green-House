@@ -2,6 +2,7 @@
   <dictionary name="mike">
     <words>
       <w>adafruit</w>
+      <w>gpio</w>
       <w>pygame</w>
     </words>
   </dictionary>
