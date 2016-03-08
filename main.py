@@ -23,7 +23,6 @@ import os
 import MySQLdb
 import RPi.GPIO as GPIO
 
-
 # TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
@@ -35,13 +34,14 @@ import RPi.GPIO as GPIO
 # Global stuff
 config = SafeConfigParser()
 config.read('config.cfg')
-interval = config.get('defaults', 'interval')              # Get sensor updating interval
-debug = config.getboolean('defaults', 'debug')             # debug print to console
-ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')        # Import Adafruit aio Key
+interval = config.get('defaults', 'interval')  # Get sensor updating interval
+debug = config.getboolean('defaults', 'debug')  # debug print to console
+ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')  # Import Adafruit aio Key
 aio = Client(ADAFRUIT_IO_KEY)
-DHT_TYPE = Adafruit_DHT.DHT22                              # Get DHT Pin number
+DHT_TYPE = Adafruit_DHT.DHT22  # Get DHT Pin number
 DHT_PIN = config.get('defaults', 'dht_pin')
-mysqlUpdate = config.getboolean('defaults', 'mysqlUpdate') # Check if using MySQL database
+mysqlUpdate = config.getboolean('defaults',
+                                'mysqlUpdate')  # Check if using MySQL database
 tsl = TSL2561()
 temp_threshold = config.get('defaults', 'fan_on')
 temp_norm = config.get('defaults', 'fan_off')
@@ -78,7 +78,7 @@ def dbUpdate():
     dbUser = config.get('defaults', 'dbUser')
     dbPassword = config.get('defaults', 'dbPassword')
     dbName = config.get('defaults', 'dbName')
-    #dbPort = config.get('defaults', 'dbPort')
+    # dbPort = config.get('defaults', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, user=dbUser, passwd=dbPassword, db=dbName)
     c = con.cursor()
 
@@ -98,13 +98,13 @@ def getCPUtemp():
     """Function used to grab RPi CPU Temp and return CPU temperature as a character
     string"""
     res = os.popen('vcgencmd measure_temp').readline()
-    return(res.replace("temp=","").replace("'C\n",""))
+    return (res.replace("temp=", "").replace("'C\n", ""))
 
 
 def cels_fahr(cels):
     """Function takes in celsius temperature and returns temp in Fahrenheit"""
     temp = cels * 9.0 / 5 + 32
-    return(temp)
+    return (temp)
 
 
 def getDHT():
@@ -130,96 +130,95 @@ def getSolar():
     The addresses for the INA219 are: ['0x40', '0x41', '0x44']
     """
     for i2caddr in ['0x40']:
-        ina = INA219(address=int(i2caddr,16))
+        ina = INA219(address=int(i2caddr, 16))
         sol_bus_v = ina.getBusVoltage_V()
         sol_shunt_mv = ina.getShuntVoltage_mV()
         sol_curr_ma = ina.getCurrent_mA()
-        sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
+        sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
     return sol_volt_v, sol_curr_ma
 
 
 def getBat():
     """ Gather INA219 sensor readings for Battery"""
     for i2caddr in ['0x41']:
-        ina = INA219(address=int(i2caddr,16))
+        ina = INA219(address=int(i2caddr, 16))
         bat_bus_v = ina.getBusVoltage_V()
         bat_shunt_mv = ina.getShuntVoltage_mV()
         bat_curr_ma = ina.getCurrent_mA()
-        bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000 )
+        bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
     return bat_volt_v, bat_curr_ma
 
 
 """ Main Loop"""
-while True:
+try:
+    while True:
 
-    try:
-        """ Get CPU temp and send it to aio.  The value is set to two decimal places.
-        """
-        getCPUtemp()
-        cels = float(getCPUtemp())
-        cpu_temp = cels_fahr(cels)
-        aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
-    finally:
-        checkDebug('CPU Temp: ' + str(cpu_temp))
+        try:
+            """ Get CPU temp and send it to aio.  The value is set to two decimal places.
+            """
+            getCPUtemp()
+            cels = float(getCPUtemp())
+            cpu_temp = cels_fahr(cels)
+            aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
+        finally:
+            checkDebug('CPU Temp: ' + str(cpu_temp))
 
-    try:
-        """ Grab DHT's temp and humidity. Function continues to try getting readings
-        so except passes.  The value is set to two decimal places.
-        """
-        dht_temp, humidity = getDHT()
-        aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
-        aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
-    finally:
-        checkDebug('DHT Temp: ' + str(dht_temp))
-        checkDebug('DHT Humidity: ' + str(humidity))
+        try:
+            """ Grab DHT's temp and humidity. Function continues to try getting readings
+            so except passes.  The value is set to two decimal places.
+            """
+            dht_temp, humidity = getDHT()
+            aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
+            aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
+        finally:
+            checkDebug('DHT Temp: ' + str(dht_temp))
+            checkDebug('DHT Humidity: ' + str(humidity))
 
-    try:
-        """ Get solar panel voltage and current.  The value is set to two decimal places.
-        """
-        sol_volt_v, sol_curr_ma = getSolar()
-        aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
-        aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
-    finally:
-        checkDebug('Solar Panel volts: ' + str(sol_volt_v))
-        checkDebug('Solar Panel current: ' + str(sol_curr_ma))
+        try:
+            """ Get solar panel voltage and current.  The value is set to two decimal places.
+            """
+            sol_volt_v, sol_curr_ma = getSolar()
+            aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
+            aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
+        finally:
+            checkDebug('Solar Panel volts: ' + str(sol_volt_v))
+            checkDebug('Solar Panel current: ' + str(sol_curr_ma))
 
-    try:
-        """ Get battery voltage and current.  The value is set to two decimal places.
-        """
-        bat_volt_v, bat_curr_ma = getBat()
-        aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
-        aio.send('greenhouse-bat-current','{:.2f}'.format(bat_curr_ma))
-    finally:
-        checkDebug('Battery volts: ' + str(bat_volt_v))
-        checkDebug('Batter current: ' + str(bat_curr_ma))
+        try:
+            """ Get battery voltage and current.  The value is set to two decimal places.
+            """
+            bat_volt_v, bat_curr_ma = getBat()
+            aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
+            aio.send('greenhouse-bat-current', '{:.2f}'.format(bat_curr_ma))
+        finally:
+            checkDebug('Battery volts: ' + str(bat_volt_v))
+            checkDebug('Batter current: ' + str(bat_curr_ma))
 
-    try:
-        """ Get the lux value from TSL2561 sensor.
-        """
-        lux = int(tsl.readLux())
-        ir = int(tsl.readIR())
+        try:
+            """ Get the lux value from TSL2561 sensor.
+            """
+            lux = int(tsl.readLux())
+            ir = int(tsl.readIR())
 
-    finally:
-        checkDebug('Lux: ' + str(lux))
-        checkDebug('IR: ' + str(ir))
+        finally:
+            checkDebug('Lux: ' + str(lux))
+            checkDebug('IR: ' + str(ir))
 
-    if mysqlUpdate == True:
-        """ Check config file to see if we are updating the database.
-        """
-        dbUpdate()
-        checkDebug('Database Updated')
-    else:
-        checkDebug('Database Update Skipped')
+        if mysqlUpdate == True:
+            """ Check config file to see if we are updating the database.
+            """
+            dbUpdate()
+            checkDebug('Database Updated')
+        else:
+            checkDebug('Database Update Skipped')
 
-    GPIO.output(fan1, GPIO.LOW)
-    checkDebug('Fan 1 ON')
-    time.sleep(5)
-    GPIO.output(fan1, GPIO.HIGH)
-    checkDebug('Fan 1 OFF')
+        GPIO.output(fan1, GPIO.LOW)
+        checkDebug('Fan 1 ON')
+        time.sleep(5)
+        GPIO.output(fan1, GPIO.HIGH)
+        checkDebug('Fan 1 OFF')
 
-
-    time.sleep(float(interval))
-
-else:
+        time.sleep(float(interval))
+except KeyboardInterrupt:
     GPIO.cleanup()
-    checkDebug('GPIO.cleanup() ran!')
+    checkDebug('Interrupt caught, GPIO.cleanup ran!')
