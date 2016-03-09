@@ -43,8 +43,8 @@ DHT_PIN = config.get('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('defaults',
                                 'mysqlUpdate')  # Check if using MySQL database
 tsl = TSL2561()
-temp_threshold = config.get('defaults', int('fan_on'))
-temp_norm = config.get('defaults', int('fan_off'))
+temp_threshold = config.get('defaults', 'fan_on')
+temp_norm = config.get('defaults', 'fan_off')
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
@@ -55,8 +55,8 @@ for i in fans:
 
 
 def checkDebug(message):
-    """ Check for debug status on config file.
-    Function can be called to print debug message.
+    """ Check for debug status on config file. Function can be called to print debug
+    message.
     """
     if debug == True:
         print(message)
@@ -152,13 +152,12 @@ def getBat():
     return bat_volt_v, bat_curr_ma
 
 
-""" Main Loop"""
+# Main Loop
 try:
     while True:
 
+        # Get CPU temp and send it to aio.  The value is set to two decimal places.
         try:
-            """ Get CPU temp and send it to aio.  The value is set to two decimal places.
-            """
             getCPUtemp()
             cels = float(getCPUtemp())
             cpu_temp = cels_fahr(cels)
@@ -166,10 +165,9 @@ try:
         finally:
             checkDebug('CPU Temp: ' + str(cpu_temp))
 
+        # Grab DHT's temp and humidity. Function continues to try getting readings so
+        # except passes.  The value is set to two decimal places.
         try:
-            """ Grab DHT's temp and humidity. Function continues to try getting readings
-            so except passes.  The value is set to two decimal places.
-            """
             dht_temp, humidity = getDHT()
             aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
             aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
@@ -177,9 +175,8 @@ try:
             checkDebug('DHT Temp: ' + str(dht_temp))
             checkDebug('DHT Humidity: ' + str(humidity))
 
+        # Get solar panel voltage and current.  The value is set to two decimal places.
         try:
-            """ Get solar panel voltage and current.  The value is set to two decimal places.
-            """
             sol_volt_v, sol_curr_ma = getSolar()
             aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
             aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
@@ -187,9 +184,8 @@ try:
             checkDebug('Solar Panel volts: ' + str(sol_volt_v))
             checkDebug('Solar Panel current: ' + str(sol_curr_ma))
 
+        # Get battery voltage and current.  The value is set to two decimal places.
         try:
-            """ Get battery voltage and current.  The value is set to two decimal places.
-            """
             bat_volt_v, bat_curr_ma = getBat()
             aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
             aio.send('greenhouse-bat-current', '{:.2f}'.format(bat_curr_ma))
@@ -197,9 +193,8 @@ try:
             checkDebug('Battery volts: ' + str(bat_volt_v))
             checkDebug('Batter current: ' + str(bat_curr_ma))
 
+        # Get the lux value from TSL2561 sensor.
         try:
-            """ Get the lux value from TSL2561 sensor.
-            """
             lux = int(tsl.readLux())
             ir = int(tsl.readIR())
 
@@ -207,15 +202,18 @@ try:
             checkDebug('Lux: ' + str(lux))
             checkDebug('IR: ' + str(ir))
 
+        # Check config file to see if we are updating the database.
         if mysqlUpdate == True:
-            """ Check config file to see if we are updating the database.
-            """
             dbUpdate()
             checkDebug('Database Updated')
         else:
             checkDebug('Database Update Skipped')
 
-        if dht_temp >= temp_threshold or dht_temp > temp_norm:
+        # Check both temp ranges from config file.  The dht_temp must be equal to or
+        # higher but not lower than the norm for fans to run.
+        # Must convert both temp ranges to an integer as they are brought from config
+        # file as strings.
+        if dht_temp >= int(temp_threshold) or dht_temp > int(temp_norm):
             GPIO.output(fans, GPIO.LOW)
             checkDebug('Fans are ON')
         else:
