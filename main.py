@@ -213,7 +213,7 @@ try:
         # higher but not lower than the norm for fans to run.
         # Must convert both temp ranges to an integer as they are brought from config
         # file as strings.
-        if dht_temp >= int(temp_threshold) or dht_temp > int(temp_norm):
+        if dht_temp >= int(temp_threshold) and dht_temp > int(temp_norm):
             GPIO.output(fans, GPIO.LOW)
             checkDebug('Fans are ON')
         else:
