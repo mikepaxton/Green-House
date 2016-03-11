@@ -12,20 +12,21 @@ Author:  Mike Paxton
 Modification date: 03/05/16
 """
 
+import os
+import sys
 import time
 import datetime
-from Adafruit_IO import Client
+import MySQLdb
+import smtplib
 import Adafruit_DHT
+import RPi.GPIO as GPIO
+from Adafruit_IO import Client
 from Subfact_ina219 import INA219
 from TSL2561 import TSL2561
 from ConfigParser import SafeConfigParser
-import os
-import sys
-import MySQLdb
-import RPi.GPIO as GPIO
-import smtplib
-from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 
 
 # TODO: Create a LCD control interface using tkinter or pygame
