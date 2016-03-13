@@ -28,12 +28,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 
-
 # TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 # TODO: Devise a means of checking the battery state before operating the fans
+# TODO: Add exhaust_fan_voltage and exhaust_fan_current to mysql database table
 
 
 # Global stuff
@@ -101,9 +101,10 @@ def dbUpdate():
     date = datetime.datetime.now()
     c.execute("INSERT INTO sensor_data (date, dht_temp, dht_humidity, cpu_temp, "
               "solar_voltage, solar_current, battery_voltage, battery_current, lux, "
-              "ir) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+              "ir, exhaust_fan_voltage, exhaust_fan_current) VALUES (%s,%s,%s,%s,%s,%s,"
+              "%s,%s,%s,%s,%s,%s)",
               (date, dht_temp, humidity, cpu_temp, sol_volt_v, sol_curr_ma,
-               bat_volt_v, bat_curr_ma, lux, ir))
+               bat_volt_v, bat_curr_ma, lux, ir, exhaust_volt_v, exhaust_curr_ma))
 
     con.commit()
     con.close()
@@ -147,7 +148,7 @@ def getCPUtemp():
 def cels_fahr(cels):
     """Function takes in celsius temperature and returns temp in Fahrenheit"""
     temp = cels * 9.0 / 5 + 32
-    return (temp)
+    return temp
 
 
 def getDHT():
@@ -170,7 +171,7 @@ def getDHT():
 
 def getSolar():
     """ Gather INA219 sensor readings for Solar Panels.
-    The addresses for the INA219 are: ['0x40', '0x41', '0x44']
+    The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
     for i2caddr in ['0x40']:
         ina = INA219(address=int(i2caddr, 16))
@@ -190,6 +191,17 @@ def getBat():
         bat_curr_ma = ina.getCurrent_mA()
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
     return bat_volt_v, bat_curr_ma
+
+
+def getExhaust():
+    """ Gather INA219 sensor readings for the exhaust fan"""
+    for i2caddr in ['0x44']:
+        ina = INA219(address=int(i2caddr, 16))
+        exhaust_bus_v = ina.getBusVoltage_V()
+        exhaust_shunt_mv = ina.getShuntVoltage_mV()
+        exhaust_curr_ma = ina.getCurrent_mA()
+        exhaust_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+    return exhaust_volt_v, exhaust_curr_ma
 
 
 # Main Loop
@@ -231,7 +243,16 @@ try:
             aio.send('greenhouse-bat-current', '{:.2f}'.format(bat_curr_ma))
         finally:
             checkDebug('Battery volts: ' + str(bat_volt_v))
-            checkDebug('Batter current: ' + str(bat_curr_ma))
+            checkDebug('Battery current: ' + str(bat_curr_ma))
+
+        # Get exhaust fan voltage and current.  The value is set to two decimal places.
+        try:
+            exhaust_volt_v, exhaust_curr_ma = getExhaust()
+            aio.send('greenhouse-exhaust-volt', '{:.2f}'.format(exhaust_volt_v))
+            aio.send('greenhouse-exhaust-current', '{:.2f}'.format(exhaust_curr_ma))
+        finally:
+            checkDebug('Exhaust Fan volts: ' + str(exhaust_volt_v))
+            checkDebug('Exhaust Fan current: ' + str(exhaust_curr_ma))
 
         # Get the lux value from TSL2561 sensor.
         try:
