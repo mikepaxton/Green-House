@@ -57,13 +57,11 @@ message_service = config.getboolean('email', 'send_email')
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
 exhaust_fan = config.get('fans', 'exhaust_fan_pin')
-int(exhaust_fan)
-GPIO.setup(exhaust_fan, GPIO.OUT)
-GPIO.output(exhaust_fan, GPIO.HIGH)
+GPIO.setup(int(exhaust_fan), GPIO.OUT)
+GPIO.output(int(exhaust_fan), GPIO.HIGH)
 circulate_fan = config.get('fans', 'circulate_fan_pin')
-int(circulate_fan)
-GPIO.setup(circulate_fan, GPIO.OUT)
-GPIO.output(circulate_fan, GPIO.HIGH)
+GPIO.setup(int(circulate_fan), GPIO.OUT)
+GPIO.output(int(circulate_fan), GPIO.HIGH)
 
 
 def checkDebug(message):
