@@ -34,6 +34,7 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 # TODO: Devise a means of checking the battery state before operating the fans
 # TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
+# TODO: Fix sleep interval
 
 
 # Global stuff
@@ -311,9 +312,8 @@ try:
             GPIO.cleanup()
             os.system('shutdown -h now')
         else:
+            time.sleep(float(interval))
             continue
-
-    time.sleep(float(interval))
 
 except KeyboardInterrupt:
     GPIO.cleanup()
