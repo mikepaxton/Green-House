@@ -18,6 +18,7 @@ def getLoad():
         print('Load Volt: ' + str(load_volt_v))
         print('Load Current: ' + str(load_curr_ma))
         print('Load Power (mW): ' + str(load_power_mw))
+        print('-----------------------')
     return load_volt_v, load_curr_ma
 
 while True:
