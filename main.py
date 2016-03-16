@@ -1,6 +1,6 @@
 #!/user/bin/python2
 """ This is my Green House Project which takes what I've learned from my SolarPi
-Project.  The purpose of this project is to control the workings of my green house by
+Project.  The purpose of this project is to control the workings of my greenhouse by
 taking various sensor readings then using those readings to control the internal
 temperature and humidity of the green house.
 The sensors which will be used are the DHT22 for green house temp and humidity. The
@@ -178,6 +178,7 @@ def getLoad():
         load_shunt_mv = ina.getShuntVoltage_mV()
         load_curr_ma = ina.getCurrent_mA()
         load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+        load_power_mW = ina.getPower_mW()
     return load_volt_v, load_curr_ma
 
 

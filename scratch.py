@@ -12,10 +12,12 @@ def getLoad():
         load_shunt_mv = ina.getShuntVoltage_mV()
         load_curr_ma = ina.getCurrent_mA()
         load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+        load_power_mw = ina.getPower_mW()
         print('Load bus: ' + str(load_bus_v))
         print('Load Shunt: ' + str(load_shunt_mv))
         print('Load Volt: ' + str(load_volt_v))
         print('Load Current: ' + str(load_curr_ma))
+        print('Load Power (mW): ' + str(load_power_mw))
     return load_volt_v, load_curr_ma
 
 while True:
