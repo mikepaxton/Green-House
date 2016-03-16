@@ -33,7 +33,6 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 # TODO: Devise a means of checking the battery state before operating the fans
-# TODO: Add exhaust_fan_voltage and exhaust_fan_current to mysql database table
 
 
 # Global stuff
@@ -94,17 +93,17 @@ def dbUpdate():
     dbPassword = config.get('database', 'dbPassword')
     dbName = config.get('database', 'dbName')
     dbPort = config.get('database', 'dbPort')
-    con = MySQLdb.connect(host=dbAddress, Port=dbPort, user=dbUser, passwd=dbPassword,
+    con = MySQLdb.connect(host=dbAddress, port=dbPort, user=dbUser, passwd=dbPassword,
                           db=dbName)
     c = con.cursor()
 
     date = datetime.datetime.now()
     c.execute("INSERT INTO sensor_data (date, dht_temp, dht_humidity, cpu_temp, "
               "solar_voltage, solar_current, battery_voltage, battery_current, lux, "
-              "ir, exhaust_fan_voltage, exhaust_fan_current) VALUES (%s,%s,%s,%s,%s,%s,"
-              "%s,%s,%s,%s,%s,%s)",
+              "ir, load_voltage, load_current) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,"
+              "%s)",
               (date, dht_temp, humidity, cpu_temp, sol_volt_v, sol_curr_ma,
-               bat_volt_v, bat_curr_ma, lux, ir, exhaust_volt_v, exhaust_curr_ma))
+               bat_volt_v, bat_curr_ma, lux, ir, load_volt_v, load_curr_ma))
 
     con.commit()
     con.close()
@@ -169,11 +168,24 @@ def getDHT():
         return dht_temp, humidity
 
 
-def getSolar():
+def getLoad():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
     for i2caddr in ['0x40']:
+        ina = INA219(address=int(i2caddr, 16))
+        load_bus_v = ina.getBusVoltage_V()
+        load_shunt_mv = ina.getShuntVoltage_mV()
+        load_curr_ma = ina.getCurrent_mA()
+        load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+    return load_volt_v, load_curr_ma
+
+
+def getSolar():
+    """ Gather INA219 sensor readings for Solar Panels.
+    The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
+    """
+    for i2caddr in ['0x41']:
         ina = INA219(address=int(i2caddr, 16))
         sol_bus_v = ina.getBusVoltage_V()
         sol_shunt_mv = ina.getShuntVoltage_mV()
@@ -184,25 +196,13 @@ def getSolar():
 
 def getBat():
     """ Gather INA219 sensor readings for Battery"""
-    for i2caddr in ['0x41']:
+    for i2caddr in ['0x44']:
         ina = INA219(address=int(i2caddr, 16))
         bat_bus_v = ina.getBusVoltage_V()
         bat_shunt_mv = ina.getShuntVoltage_mV()
         bat_curr_ma = ina.getCurrent_mA()
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
     return bat_volt_v, bat_curr_ma
-
-
-def getExhaust():
-    """ Gather INA219 sensor readings for the exhaust fan"""
-    for i2caddr in ['0x44']:
-        ina = INA219(address=int(i2caddr, 16))
-        exhaust_bus_v = ina.getBusVoltage_V()
-        exhaust_shunt_mv = ina.getShuntVoltage_mV()
-        exhaust_curr_ma = ina.getCurrent_mA()
-        exhaust_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
-    return exhaust_volt_v, exhaust_curr_ma
-
 
 # Main Loop
 try:
@@ -227,6 +227,15 @@ try:
             checkDebug('DHT Temp: ' + str(dht_temp))
             checkDebug('DHT Humidity: ' + str(humidity))
 
+        # Get Load voltage and current.  The value is set to two decimal places.
+        try:
+            load_volt_v, load_curr_ma = getSolar()
+            aio.send('greenhouse-load-volt', '{:.2f}'.format(load_volt_v))
+            aio.send('greenhouse-load-current', '{:.2f}'.format(load_curr_ma))
+        finally:
+            checkDebug('Load volts: ' + str(sol_volt_v))
+            checkDebug('Load current: ' + str(sol_curr_ma))
+
         # Get solar panel voltage and current.  The value is set to two decimal places.
         try:
             sol_volt_v, sol_curr_ma = getSolar()
@@ -244,15 +253,6 @@ try:
         finally:
             checkDebug('Battery volts: ' + str(bat_volt_v))
             checkDebug('Battery current: ' + str(bat_curr_ma))
-
-        # Get exhaust fan voltage and current.  The value is set to two decimal places.
-        try:
-            exhaust_volt_v, exhaust_curr_ma = getExhaust()
-            aio.send('greenhouse-exhaust-volt', '{:.2f}'.format(exhaust_volt_v))
-            aio.send('greenhouse-exhaust-current', '{:.2f}'.format(exhaust_curr_ma))
-        finally:
-            checkDebug('Exhaust Fan volts: ' + str(exhaust_volt_v))
-            checkDebug('Exhaust Fan current: ' + str(exhaust_curr_ma))
 
         # Get the lux value from TSL2561 sensor.
         try:
@@ -275,19 +275,19 @@ try:
         # Must convert both temp ranges to an integer as they are brought from config
         # file as strings.
         if dht_temp >= int(temp_threshold) and dht_temp > int(temp_norm):
-            GPIO.output(exhaust_fan, GPIO.LOW)
+            GPIO.output(int(exhaust_fan), GPIO.LOW)
             checkDebug('Exhaust fans is ON')
         else:
-            GPIO.output(exhaust_fan, GPIO.HIGH)
+            GPIO.output(int(exhaust_fan), GPIO.HIGH)
             checkDebug('Exhaust fan is OFF')
 
         # Check dht_temp against circulate_fan temp and if if need be turn on circulate
         # fan.
         if dht_temp >= circulate_temp:
-            GPIO.output(circulate_fan, GPIO.LOW)
+            GPIO.output(int(circulate_fan), GPIO.LOW)
             checkDebug('Circulation fan is ON')
         else:
-            GPIO.output(circulate_fan, GPIO.HIGH)
+            GPIO.output(int(circulate_fan), GPIO.HIGH)
             checkDebug('Circulate fan is OFF')
 
         # Shutdown the Raspberry Pi if the cpu temp gets to hot.  If message_service is
