@@ -238,6 +238,7 @@ try:
         # Get Load voltage and current.  The value is set to two decimal places.
         try:
             load_volt_v, load_curr_ma = getLoad()
+            print('Load Ran')
             aio.send('greenhouse-load-volt', '{:.2f}'.format(load_volt_v))
             aio.send('greenhouse-load-current', '{:.2f}'.format(load_curr_ma))
         finally:
