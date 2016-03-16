@@ -6,7 +6,7 @@ def getLoad():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    for i2caddr in ['0x41']:
+    for i2caddr in ['0x40']:
         ina = INA219(address=int(i2caddr, 16))
         load_bus_v = ina.getBusVoltage_V()
         load_shunt_mv = ina.getShuntVoltage_mV()
