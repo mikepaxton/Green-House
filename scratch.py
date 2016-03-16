@@ -16,3 +16,4 @@ def getLoad():
         print('Load Volt: ' + str(load_volt_v))
     return load_volt_v, load_curr_ma
 
+getLoad()
