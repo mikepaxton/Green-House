@@ -172,18 +172,12 @@ def getLoad():
     """ Gather INA219 sensor readings for Load.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    #for i2caddr in ['0x40']:
     ina = INA219(address=int('0x40', 16))
     load_bus_v = ina.getBusVoltage_V()
     load_shunt_mv = ina.getShuntVoltage_mV()
     load_curr_ma = ina.getCurrent_mA()
     load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
     load_power_mw = ina.getPower_mW()
-    print('Load bus: ' + str(load_bus_v))
-    print('Load Shunt: ' + str(load_shunt_mv))
-    print('Load Volt: ' + str(load_volt_v))
-    print('Load Current: ' + str(load_curr_ma))
-    print('Load Power (mW): ' + str(load_power_mw))
     return load_volt_v, load_curr_ma
 
 
@@ -191,25 +185,25 @@ def getSolar():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    for i2caddr in ['0x41']:
-        ina = INA219(address=int(i2caddr, 16))
-        sol_bus_v = ina.getBusVoltage_V()
-        sol_shunt_mv = ina.getShuntVoltage_mV()
-        sol_curr_ma = ina.getCurrent_mA()
-        sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
-        sol_power_mw = ina.getPower_mW()
+    ina = INA219(address=int('0x41', 16))
+    sol_bus_v = ina.getBusVoltage_V()
+    sol_shunt_mv = ina.getShuntVoltage_mV()
+    sol_curr_ma = ina.getCurrent_mA()
+    sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+    sol_power_mw = ina.getPower_mW()
     return sol_volt_v, sol_curr_ma
 
 
 def getBat():
-    """ Gather INA219 sensor readings for Battery"""
-    for i2caddr in ['0x44']:
-        ina = INA219(address=int(i2caddr, 16))
-        bat_bus_v = ina.getBusVoltage_V()
-        bat_shunt_mv = ina.getShuntVoltage_mV()
-        bat_curr_ma = ina.getCurrent_mA()
-        bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
-        bat_power_mw = ina.getPower_mW()
+    """ Gather INA219 sensor readings for Battery.
+    The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
+    """
+    ina = INA219(address=int('0x44', 16))
+    bat_bus_v = ina.getBusVoltage_V()
+    bat_shunt_mv = ina.getShuntVoltage_mV()
+    bat_curr_ma = ina.getCurrent_mA()
+    bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+    bat_power_mw = ina.getPower_mW()
     return bat_volt_v, bat_curr_ma
 
 # Main Loop
@@ -238,7 +232,6 @@ try:
         # Get Load voltage and current.  The value is set to two decimal places.
         try:
             load_volt_v, load_curr_ma = getLoad()
-            print('Load Ran')
             aio.send('greenhouse-load-volt', '{:.2f}'.format(load_volt_v))
             aio.send('greenhouse-load-current', '{:.2f}'.format(load_curr_ma))
         finally:
