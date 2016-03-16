@@ -312,8 +312,9 @@ try:
             GPIO.cleanup()
             os.system('shutdown -h now')
         else:
-            time.sleep(float(interval))
             continue
+
+        time.sleep(float(interval))
 
 except KeyboardInterrupt:
     GPIO.cleanup()
