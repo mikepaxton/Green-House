@@ -39,28 +39,28 @@ from email.mime.multipart import MIMEMultipart
 tsl = TSL2561()
 config = SafeConfigParser()
 config.read('config.cfg')
-interval = config.get('defaults', 'interval')  # Get sensor updating interval
+interval = config.getint('defaults', 'interval')  # Get sensor updating interval
 debug = config.getboolean('defaults', 'debug')  # debug print to console
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')  # Import Adafruit aio Key
 aio = Client(ADAFRUIT_IO_KEY)
 DHT_TYPE = Adafruit_DHT.DHT22
-DHT_PIN = config.get('defaults', 'dht_pin')
+DHT_PIN = config.getint('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('database', 'mysqlUpdate')  # Are we using database?
-max_cpu_temp = config.get('defaults', 'max_cpu_temp')
-temp_threshold = config.get('fans', 'exhaust_fan_on')
-temp_norm = config.get('fans', 'exhaust_fan_off')
-circulate_temp = config.get('fans', 'circulate_temp')
+max_cpu_temp = config.getint('defaults', 'max_cpu_temp')
+temp_threshold = config.getint('fans', 'exhaust_fan_on')
+temp_norm = config.getint('fans', 'exhaust_fan_off')
+circulate_temp = config.getint('fans', 'circulate_temp')
 message_service = config.getboolean('email', 'send_email')
 
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
-exhaust_fan = config.get('fans', 'exhaust_fan_pin')
-GPIO.setup(int(exhaust_fan), GPIO.OUT)
-GPIO.output(int(exhaust_fan), GPIO.HIGH)
-circulate_fan = config.get('fans', 'circulate_fan_pin')
-GPIO.setup(int(circulate_fan), GPIO.OUT)
-GPIO.output(int(circulate_fan), GPIO.HIGH)
+exhaust_fan = config.getint('fans', 'exhaust_fan_pin')
+GPIO.setup(exhaust_fan, GPIO.OUT)
+GPIO.output(exhaust_fan, GPIO.HIGH)
+circulate_fan = config.getint('fans', 'circulate_fan_pin')
+GPIO.setup(circulate_fan, GPIO.OUT)
+GPIO.output(circulate_fan, GPIO.HIGH)
 
 
 def checkDebug(message):
@@ -92,7 +92,7 @@ def dbUpdate():
     dbUser = config.get('database', 'dbUser')
     dbPassword = config.get('database', 'dbPassword')
     dbName = config.get('database', 'dbName')
-    dbPort = config.get('database', 'dbPort')
+    dbPort = config.getint('database', 'dbPort')
     con = MySQLdb.connect(host=dbAddress, port=dbPort, user=dbUser, passwd=dbPassword,
                           db=dbName)
     c = con.cursor()
@@ -274,20 +274,20 @@ try:
         # higher than threshold but not lower than the norm for exhaust to run.
         # Must convert both temp ranges to an integer as they are brought from config
         # file as strings.
-        if dht_temp >= int(temp_threshold) and dht_temp > int(temp_norm):
-            GPIO.output(int(exhaust_fan), GPIO.LOW)
+        if dht_temp >= temp_threshold and dht_temp > temp_norm:
+            GPIO.output(exhaust_fan, GPIO.LOW)
             checkDebug('Exhaust fans is ON')
         else:
-            GPIO.output(int(exhaust_fan), GPIO.HIGH)
+            GPIO.output(exhaust_fan, GPIO.HIGH)
             checkDebug('Exhaust fan is OFF')
 
         # Check dht_temp against circulate_fan temp and if if need be turn on circulate
         # fan.
         if dht_temp >= circulate_temp:
-            GPIO.output(int(circulate_fan), GPIO.LOW)
+            GPIO.output(circulate_fan, GPIO.LOW)
             checkDebug('Circulation fan is ON')
         else:
-            GPIO.output(int(circulate_fan), GPIO.HIGH)
+            GPIO.output(circulate_fan, GPIO.HIGH)
             checkDebug('Circulate fan is OFF')
 
         # Shutdown the Raspberry Pi if the cpu temp gets to hot.  If message_service is
