@@ -172,13 +172,13 @@ def getLoad():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    for i2caddr in ['0x40']:
-        ina = INA219(address=int(i2caddr, 16))
-        load_bus_v = ina.getBusVoltage_V()
-        load_shunt_mv = ina.getShuntVoltage_mV()
-        load_curr_ma = ina.getCurrent_mA()
-        load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
-        load_power_mW = ina.getPower_mW()
+    #for i2caddr in ['0x40']:
+    ina = INA219(address=int(0x40, 16))
+    load_bus_v = ina.getBusVoltage_V()
+    load_shunt_mv = ina.getShuntVoltage_mV()
+    load_curr_ma = ina.getCurrent_mA()
+    load_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+    load_power_mW = ina.getPower_mW()
     return load_volt_v, load_curr_ma
 
 
@@ -192,6 +192,7 @@ def getSolar():
         sol_shunt_mv = ina.getShuntVoltage_mV()
         sol_curr_ma = ina.getCurrent_mA()
         sol_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+        sol_power_mW = ina.getPower_mW()
     return sol_volt_v, sol_curr_ma
 
 
@@ -203,6 +204,7 @@ def getBat():
         bat_shunt_mv = ina.getShuntVoltage_mV()
         bat_curr_ma = ina.getCurrent_mA()
         bat_volt_v = (ina.getBusVoltage_V() + ina.getShuntVoltage_mV() / 1000)
+        bat_power_mW = ina.getPower_mW()
     return bat_volt_v, bat_curr_ma
 
 # Main Loop
