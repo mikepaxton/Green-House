@@ -229,12 +229,12 @@ try:
 
         # Get Load voltage and current.  The value is set to two decimal places.
         try:
-            load_volt_v, load_curr_ma = getSolar()
+            load_volt_v, load_curr_ma = getLoad()
             aio.send('greenhouse-load-volt', '{:.2f}'.format(load_volt_v))
             aio.send('greenhouse-load-current', '{:.2f}'.format(load_curr_ma))
         finally:
-            checkDebug('Load volts: ' + str(sol_volt_v))
-            checkDebug('Load current: ' + str(sol_curr_ma))
+            checkDebug('Load volts: ' + str(load_volt_v))
+            checkDebug('Load current: ' + str(load_curr_ma))
 
         # Get solar panel voltage and current.  The value is set to two decimal places.
         try:
