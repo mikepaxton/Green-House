@@ -311,8 +311,6 @@ try:
 
             GPIO.cleanup()
             os.system('shutdown -h now')
-        else:
-            continue
 
         time.sleep(float(interval))
 
