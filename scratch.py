@@ -1,4 +1,5 @@
 from Subfact_ina219 import INA219
+import time
 
 
 def getLoad():
@@ -17,4 +18,7 @@ def getLoad():
         print('Load Current: ' + str(load_curr_ma))
     return load_volt_v, load_curr_ma
 
-getLoad()
+while True:
+    getLoad()
+
+    time.sleep(5)
