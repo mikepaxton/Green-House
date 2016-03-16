@@ -14,6 +14,7 @@ def getLoad():
         print('Load bus: ' + str(load_bus_v))
         print('Load Shunt: ' + str(load_shunt_mv))
         print('Load Volt: ' + str(load_volt_v))
+        print('Load Current: ' + str(load_curr_ma))
     return load_volt_v, load_curr_ma
 
 getLoad()
