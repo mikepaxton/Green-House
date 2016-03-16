@@ -33,6 +33,7 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 # TODO: Devise a means of checking the battery state before operating the fans
+# TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
 
 
 # Global stuff
@@ -312,7 +313,7 @@ try:
         else:
             continue
 
-        time.sleep(float(interval))
+    time.sleep(float(interval))
 
 except KeyboardInterrupt:
     GPIO.cleanup()
