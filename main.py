@@ -38,6 +38,7 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Incorporate PowerSwitch Tail to turn a heater on and off
 # TODO: Modify fan code so both fans only come on during daylight
 # TODO: Create a warning message system for events such as high/low temp, low bat. etc...
+# TODO: Find a means of rechecking DHT sensor if no reading is grabbed
 
 # Global stuff
 #tsl = TSL2561()
@@ -250,12 +251,13 @@ try:
             print("Unable to connect to Adafruit.io")
         finally:
             if message_service:
-                if dht_temp <= 40 or dht_temp >= 90:
-                    message = "The temperature in the greenhouse is %s. /n Please take " \
+                if dht_temp <= 40 or dht_temp >= 90 and dht_temp != 0:
+                    message = "The temperature in the greenhouse is %s.  Please take " \
                               "whatever steps are needed to correct this before the " \
                               "plants are damaged." % str(dht_temp)
                     send_email('Temperature out of range!', message)
-                if dht_temp >= 85 and dht_humidity >= 85:
+            if message_service:
+                if dht_temp >= 85 and dht_humidity >= 85 and dht_temp != 0:
                     message = "The humidity of %s is becoming to high in conjunction " \
                               "with the current temperature of %s. Please take action " \
                               "to  correct this issue." % str(dht_humidity) % str(dht_temp)
