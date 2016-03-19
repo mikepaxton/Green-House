@@ -259,13 +259,13 @@ try:
             checkDebug('Battery current: ' + str(bat_curr_ma))
 
         # Get the lux value from TSL2561 sensor.
-        try:
-            lux = int(tsl.readLux())
-            ir = int(tsl.readIR())
-
-        finally:
-            checkDebug('Lux: ' + str(lux))
-            checkDebug('IR: ' + str(ir))
+        # try:
+        #     lux = int(tsl.readLux())
+        #     ir = int(tsl.readIR())
+        #
+        # finally:
+        #     checkDebug('Lux: ' + str(lux))
+        #     checkDebug('IR: ' + str(ir))
 
         # Check config file to see if we are updating the database.
         if mysqlUpdate == True:
