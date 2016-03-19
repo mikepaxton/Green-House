@@ -9,7 +9,7 @@ of the batteries.
 The project will be using a Raspberry Pi for gathering the data and sending it out
 using feeds to io.adafruit.com for charting.
 Author:  Mike Paxton
-Modification date: 03/05/16
+Modification date: 03/15/16
 """
 
 import os
@@ -34,8 +34,8 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Work with the TSL2561 light sensor to check for data accuracy
 # TODO: Devise a means of checking the battery state before operating the fans
 # TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
-# TODO: Fix sleep interval
-
+# TODO: Incorporate PowerSwitch Tail to turn a heater on and off
+# TODO: Modify fan code so both fans only come on during daylight hours
 
 # Global stuff
 tsl = TSL2561()
@@ -187,7 +187,7 @@ def getSolar():
     """ Gather INA219 sensor readings for Solar Panels.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    ina = INA219(address=int('0x41', 16))
+    ina = INA219(address=int('0x44', 16))
     sol_bus_v = ina.getBusVoltage_V()
     sol_shunt_mv = ina.getShuntVoltage_mV()
     sol_curr_ma = ina.getCurrent_mA()
@@ -200,7 +200,7 @@ def getBat():
     """ Gather INA219 sensor readings for Battery.
     The addresses for the INA219 are: ['0x40', '0x41', '0x44', '0x45']
     """
-    ina = INA219(address=int('0x44', 16))
+    ina = INA219(address=int('0x41', 16))
     bat_bus_v = ina.getBusVoltage_V()
     bat_shunt_mv = ina.getShuntVoltage_mV()
     bat_curr_ma = ina.getCurrent_mA()
@@ -302,9 +302,9 @@ try:
             if message_service == True:
                 message = "The CPU temperature has reached the maximum allowed set in " \
                           " the config file so the system is being shutdown.  This " \
-                          "means the fans are no longer working and the plants in the " \
-                          "greenhouse are in danger. /n  Please check the system as " \
-                          "soon as possible!"
+                          "means the heating and cooling system is no longer working " \
+                          "so the plants in the greenhouse are in danger. /n  Please " \
+                          "check the system as soon as possible!"
                 send_email('Shutdown', message)
                 checkDebug('CPU Temp to high, system is shutting down.')
                 time.sleep(30)
