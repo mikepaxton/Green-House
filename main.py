@@ -161,16 +161,16 @@ def getDHT():
     Temp is converted to Fahrenheit.
     """
     dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-    while cels and dht_humidity is False:
-        dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-        checkDebug('Unable to get DHT values, will try again!')
+    # while cels and dht_humidity is False:
+    #     dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    #     checkDebug('Unable to get DHT values, will try again!')
+    # else:
+    #dht_temp = cels_fahr()
+    if cels and dht_humidity:
+        dht_temp = cels_fahr(cels)
     else:
-        dht_temp = cels_fahr()
-    #     if cels and dht_humidity:
-    #         dht_temp = cels_fahr(cels)
-    #     else:
-    #         dht_temp = 0
-    #         dht_humidity = 0
+        dht_temp = 0
+        dht_humidity = 0
     return dht_temp, dht_humidity
 
 
