@@ -1,15 +1,16 @@
 #!/user/bin/python2
-""" This is my Green House Project which takes what I've learned from my SolarPi
-Project.  The purpose of this project is to control the workings of my greenhouse by
+""" This is my Greenhouse Project which takes what I've learned from my SolarPi
+Project, the use of solar panels to power a Raspberry Pi system indefinetly.  The
+purpose of this project is to control the workings of my greenhouse by
 taking various sensor readings then using those readings to control the internal
 temperature and humidity of the green house.
-The sensors which will be used are the DHT22 for green house temp and humidity. The
+The sensors which will be used are the DHT22 for greenhouse temp and humidity. The
 INA219 for gathering the voltage and current input of the solar panels and the status
-of the batteries.
+of the batteries along with the current being used by load.
 The project will be using a Raspberry Pi for gathering the data and sending it out
 using feeds to io.adafruit.com for charting.
 Author:  Mike Paxton
-Modification date: 03/15/16
+Modification date: 03/19/16
 """
 
 import os
@@ -54,6 +55,8 @@ temp_threshold = config.getint('fans', 'exhaust_fan_on')
 temp_norm = config.getint('fans', 'exhaust_fan_off')
 circulate_temp = config.getint('fans', 'circulate_temp')
 message_service = config.getboolean('email', 'send_email')
+sunup = config.get('defaults', 'sunup')
+sundown = config.get('defaults', 'sundown')
 
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
@@ -159,16 +162,18 @@ def getDHT():
     the sensor can't be reliably read (timing is critical to read the sensor).
     Temp is converted to Fahrenheit.
     """
-    try:
+    dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    while cels and dht_humidity == False:
         dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-        if cels and dht_humidity:
-            dht_temp = cels_fahr(cels)
-        else:
-            dht_temp = 0
-            dht_humidity = 0
-            checkDebug('Unable to get DHT values!')
-    finally:
-        return dht_temp, dht_humidity
+        checkDebug('Unable to get DHT values, will try again!')
+    else:
+        dht_temp = cels_fahr()
+    #     if cels and dht_humidity:
+    #         dht_temp = cels_fahr(cels)
+    #     else:
+    #         dht_temp = 0
+    #         dht_humidity = 0
+    return dht_temp, dht_humidity
 
 
 def getLoad():
@@ -229,12 +234,12 @@ try:
         # connection available. The system will wait for X number of seconds to send
         # the message before shutting down.
         if cpu_temp >= max_cpu_temp:
-            if message_service == True:
-                message = "The CPU temperature has reached the maximum allowed set in " \
-                          " the config file so the system is being shutdown.  This " \
+            if message_service:
+                message = "The CPU temperature of %s has reached the maximum allowed " \
+                          "set in the config file, the system is being shutdown.  This " \
                           "means the heating and cooling system is no longer working " \
-                          "so the plants in the greenhouse are in danger. /n  Please " \
-                          "check the system as soon as possible!"
+                          "so the plants in the greenhouse maybe in danger. /n  Please " \
+                          "check the system as soon as possible!" % str(cpu_temp)
                 send_email('Shutdown', message)
                 checkDebug('CPU Temp to high, system is shutting down.')
                 time.sleep(30)
@@ -251,16 +256,16 @@ try:
         except IOError:
             print("Unable to connect to Adafruit.io")
         finally:
-            if message_service == True:
-                if dht_temp <= 40 or dht_temp >= 89:
-                    message = "The temperature in the greenhouse is " + str(dht_temp) +\
-                              " /n Please take whatever steps are needed to correct the" \
-                              " before the plans are damaged."
+            if message_service:
+                if dht_temp <= 40 or dht_temp >= 90:
+                    message = "The temperature in the greenhouse is %s. /n Please take " \
+                              "whatever steps are needed to correct this before the " \
+                              "plants are damaged." % str(dht_temp)
                     send_email('Temperature out of range!', message)
                 if dht_temp >= 85 and dht_humidity >= 85:
-                    message = "The humidity is getting to high for the temperature of " \
-                              "the greenhouse.  Current humidity is " + str(dht_humidity) + \
-                              " and the current temperature is " + str(dht_temp)
+                    message = "The humidity of %s is becoming to high in conjunction " \
+                              "with the current temperature of %s. Please take action " \
+                              "to  correct this issue." % str(dht_humidity) % str(dht_temp)
                     send_email("High humidity!", message)
             checkDebug('DHT Temp: ' + str(dht_temp))
             checkDebug('DHT Humidity: ' + str(dht_humidity))
@@ -308,7 +313,7 @@ try:
         #     checkDebug('IR: ' + str(ir))
 
         # Check config file to see if we are updating the database.
-        if mysqlUpdate == True:
+        if mysqlUpdate:
             dbUpdate()
             checkDebug('Database Updated')
         else:
@@ -318,6 +323,7 @@ try:
         # higher than threshold but not lower than the norm for exhaust to run.
         # Must convert both temp ranges to an integer as they are brought from config
         # file as strings.
+
         if dht_temp >= temp_threshold and dht_temp > temp_norm:
             GPIO.output(exhaust_fan, GPIO.LOW)
             checkDebug('Exhaust fans is ON')

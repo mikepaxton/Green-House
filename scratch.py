@@ -1,20 +1,18 @@
-from Adafruit_BME280 import *
+import datetime
+from astral import Astral
 
-sensor = BME280(mode=BME280_OSAMPLE_8)
+a = Astral()
+a.solar_depression = 'civil'
 
-degrees = sensor.read_temperature()
-pascals = sensor.read_pressure()
-hectopascals = pascals / 100
-humidity = sensor.read_humidity()
+l = Location(('Lincoln City', 'USA', 44.9722, 124.0111, 'US/Pacific', 0))
+l.sun()
 
-def cels_fahr(cels):
-    """Function takes in celsius temperature and returns temp in Fahrenheit"""
-    temp = cels * 9.0 / 5 + 32
-    return temp
+city = a[city_name]
 
-temp = cels_fahr(degrees)
 
-print 'Timestamp = {0:0.3f}'.format(sensor.t_fine)
-print 'Temp      = {0:0.3f} deg C'.format(temp)
-print 'Pressure  = {0:0.2f} hPa'.format(hectopascals)
-print 'Humidity  = {0:0.2f} %'.format(humidity)
+print('Information for %s/%s\n' % (city_name, city.region))
+
+sun = city.sun(date=datetime.datetime.now(), local=True)
+
+print('Sunrise: %s' % str(sun['sunrise']))
+print('Sunset:  %s' % str(sun['sunset']))
