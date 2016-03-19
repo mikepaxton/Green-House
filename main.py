@@ -22,7 +22,7 @@ import Adafruit_DHT
 import RPi.GPIO as GPIO
 from Adafruit_IO import Client
 from Subfact_ina219 import INA219
-from TSL2561 import TSL2561
+#from TSL2561 import TSL2561
 from ConfigParser import SafeConfigParser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -35,7 +35,8 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Devise a means of checking the battery state before operating the fans
 # TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
 # TODO: Incorporate PowerSwitch Tail to turn a heater on and off
-# TODO: Modify fan code so both fans only come on during daylight hours
+# TODO: Modify fan code so both fans only come on during daylight
+# TODO: Create a warning message system for events such as high/low temp, low bat. etc...
 
 # Global stuff
 #tsl = TSL2561()
@@ -104,7 +105,7 @@ def dbUpdate():
               "solar_voltage, solar_current, battery_voltage, battery_current, "
               "load_voltage, load_current) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,"
               "%s)",
-              (date, dht_temp, humidity, cpu_temp, sol_volt_v, sol_curr_ma,
+              (date, dht_temp, dht_humidity, cpu_temp, sol_volt_v, sol_curr_ma,
                bat_volt_v, bat_curr_ma, load_volt_v, load_curr_ma))
 
     con.commit()
@@ -159,15 +160,15 @@ def getDHT():
     Temp is converted to Fahrenheit.
     """
     try:
-        humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-        if cels and humidity:
+        dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+        if cels and dht_humidity:
             dht_temp = cels_fahr(cels)
         else:
             dht_temp = 0
-            humidity = 0
+            dht_humidity = 0
             checkDebug('Unable to get DHT values!')
     finally:
-        return dht_temp, humidity
+        return dht_temp, dht_humidity
 
 
 def getLoad():
@@ -218,24 +219,59 @@ try:
             cels = float(getCPUtemp())
             cpu_temp = cels_fahr(cels)
             aio.send('greenhouse-cpu-temp', '{:.2f}'.format(cpu_temp))
+        except IOError:
+            print("Unable to connect to Adafruit.io")
         finally:
             checkDebug('CPU Temp: ' + str(cpu_temp))
+
+        # Shutdown the Raspberry Pi if the cpu temp gets to hot.  If message_service is
+        # set to True an email message will be sent out so long as there is an Internet
+        # connection available. The system will wait for X number of seconds to send
+        # the message before shutting down.
+        if cpu_temp >= max_cpu_temp:
+            if message_service == True:
+                message = "The CPU temperature has reached the maximum allowed set in " \
+                          " the config file so the system is being shutdown.  This " \
+                          "means the heating and cooling system is no longer working " \
+                          "so the plants in the greenhouse are in danger. /n  Please " \
+                          "check the system as soon as possible!"
+                send_email('Shutdown', message)
+                checkDebug('CPU Temp to high, system is shutting down.')
+                time.sleep(30)
+
+            GPIO.cleanup()
+            os.system('shutdown -h now')
 
         # Grab DHT's temp and humidity. Function continues to try getting readings so
         # except passes.  The value is set to two decimal places.
         try:
-            dht_temp, humidity = getDHT()
+            dht_temp, dht_humidity = getDHT()
             aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
-            aio.send('greenhouse-humidity', '{:.2f}'.format(humidity))
+            aio.send('greenhouse-humidity', '{:.2f}'.format(dht_humidity))
+        except IOError:
+            print("Unable to connect to Adafruit.io")
         finally:
+            if message_service == True:
+                if dht_temp <= 40 or dht_temp >= 89:
+                    message = "The temperature in the greenhouse is " + str(dht_temp) +\
+                              " /n Please take whatever steps are needed to correct the" \
+                              " before the plans are damaged."
+                    send_email('Temperature out of range!', message)
+                if dht_temp >= 85 and dht_humidity >= 85:
+                    message = "The humidity is getting to high for the temperature of " \
+                              "the greenhouse.  Current humidity is " + str(dht_humidity) + \
+                              " and the current temperature is " + str(dht_temp)
+                    send_email("High humidity!", message)
             checkDebug('DHT Temp: ' + str(dht_temp))
-            checkDebug('DHT Humidity: ' + str(humidity))
+            checkDebug('DHT Humidity: ' + str(dht_humidity))
 
         # Get Load voltage and current.  The value is set to two decimal places.
         try:
             load_volt_v, load_curr_ma = getLoad()
             aio.send('greenhouse-load-volt', '{:.2f}'.format(load_volt_v))
             aio.send('greenhouse-load-current', '{:.2f}'.format(load_curr_ma))
+        except IOError:
+            print("Unable to connect to Adafruit.io")
         finally:
             checkDebug('Load volts: ' + str(load_volt_v))
             checkDebug('Load current: ' + str(load_curr_ma))
@@ -245,6 +281,8 @@ try:
             sol_volt_v, sol_curr_ma = getSolar()
             aio.send('greenhouse-sol-volt', '{:.2f}'.format(sol_volt_v))
             aio.send('greenhouse-sol-current', '{:.2f}'.format(sol_curr_ma))
+        except IOError:
+            print("Unable to connect to Adafruit.io")
         finally:
             checkDebug('Solar Panel volts: ' + str(sol_volt_v))
             checkDebug('Solar Panel current: ' + str(sol_curr_ma))
@@ -254,6 +292,8 @@ try:
             bat_volt_v, bat_curr_ma = getBat()
             aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
             aio.send('greenhouse-bat-current', '{:.2f}'.format(bat_curr_ma))
+        except IOError:
+            print("Unable to connect to Adafruit.io")
         finally:
             checkDebug('Battery volts: ' + str(bat_volt_v))
             checkDebug('Battery current: ' + str(bat_curr_ma))
@@ -293,24 +333,6 @@ try:
         else:
             GPIO.output(circulate_fan, GPIO.HIGH)
             checkDebug('Circulate fan is OFF')
-
-        # Shutdown the Raspberry Pi if the cpu temp gets to hot.  If message_service is
-        # set to True an email message will be sent out so long as there is an Internet
-        # connection available. The system will wait for X number of seconds to send
-        # the message before shutting down.
-        if cpu_temp >= max_cpu_temp:
-            if message_service == True:
-                message = "The CPU temperature has reached the maximum allowed set in " \
-                          " the config file so the system is being shutdown.  This " \
-                          "means the heating and cooling system is no longer working " \
-                          "so the plants in the greenhouse are in danger. /n  Please " \
-                          "check the system as soon as possible!"
-                send_email('Shutdown', message)
-                checkDebug('CPU Temp to high, system is shutting down.')
-                time.sleep(30)
-
-            GPIO.cleanup()
-            os.system('shutdown -h now')
 
         time.sleep(float(interval))
 
