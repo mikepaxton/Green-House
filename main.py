@@ -55,8 +55,6 @@ temp_threshold = config.getint('fans', 'exhaust_fan_on')
 temp_norm = config.getint('fans', 'exhaust_fan_off')
 circulate_temp = config.getint('fans', 'circulate_temp')
 message_service = config.getboolean('email', 'send_email')
-sunup = config.get('defaults', 'sunup')
-sundown = config.get('defaults', 'sundown')
 
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
