@@ -251,6 +251,8 @@ try:
             dht_temp, dht_humidity = getDHT()
             aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
             aio.send('greenhouse-humidity', '{:.2f}'.format(dht_humidity))
+            checkDebug('DHT Temp: ' + str(dht_temp))
+            checkDebug('DHT Humidity: ' + str(dht_humidity))
         except IOError:
             print("Unable to connect to Adafruit.io")
         finally:
