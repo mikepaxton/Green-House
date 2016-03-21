@@ -32,7 +32,7 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
-# TODO: Work with the TSL2561 light sensor to check for data accuracy
+# TODO: Find a decent light sensor and incorporate it into program
 # TODO: Devise a means of checking the battery state before operating the fans
 # TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
 # TODO: Incorporate PowerSwitch Tail to turn a heater on and off
@@ -166,6 +166,7 @@ def getDHT():
         checkDebug("*** Unable to get DHT values! ***")
         time.sleep(2)
         dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    print type(cels)
     dht_temp = cels_fahr(cels)
     return dht_temp, dht_humidity
 
