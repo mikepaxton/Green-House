@@ -221,6 +221,7 @@ try:
         except IOError:
             print("Unable to connect to Adafruit.io")
         finally:
+            checkDebug('--------------------------')  # Used to separate each interval
             checkDebug('CPU Temp: ' + str(cpu_temp))
 
         # Shutdown the Raspberry Pi if the cpu temp gets to hot.  If message_service is
@@ -252,13 +253,13 @@ try:
             print("Unable to connect to Adafruit.io")
         finally:
             if message_service:
-                if dht_temp <= 40 or dht_temp >= 90 and dht_temp != 0:
+                if dht_temp != 0 and dht_temp <= 40 or dht_temp >= 90:
                     message = "The temperature in the greenhouse is %s.  Please take " \
                               "whatever steps are needed to correct this before the " \
                               "plants are damaged." % str(dht_temp)
                     send_email('Temperature out of range!', message)
             if message_service:
-                if dht_temp >= 85 and dht_humidity >= 85 and dht_temp != 0:
+                if dht_temp >= 85 and dht_humidity >= 85:
                     message = "The humidity of %s is becoming to high in conjunction " \
                               "with the current temperature of %s. Please take action " \
                               "to  correct this issue." % str(dht_humidity) % str(dht_temp)
