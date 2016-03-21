@@ -38,7 +38,6 @@ from email.mime.multipart import MIMEMultipart
 # TODO: Incorporate PowerSwitch Tail to turn a heater on and off
 # TODO: Modify fan code so both fans only come on during daylight
 # TODO: Create a warning message system for events such as high/low temp, low bat. etc...
-# TODO: Find a means of rechecking DHT sensor if no reading is grabbed
 
 # Global stuff
 #tsl = TSL2561()
@@ -156,20 +155,15 @@ def cels_fahr(cels):
 
 
 def getDHT():
-    """ Attempt to get sensor reading of DHT.  If it is unable to it will continue
-    trying until it succeeds. This can happen if the CPU is under a lot of load and
-    the sensor can't be reliably read (timing is critical to read the sensor).
+    """ Attempt to get sensor reading of DHT.  If it's unable it will wait a couple of
+    seconds and then try again until it succeeds. This can happen if the CPU is under a
+    lot of load and the sensor can't be reliably read (timing is critical to read the
+    sensor).
     Temp is converted to Fahrenheit.
     """
-    # dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-    # if cels and dht_humidity:
-    #     dht_temp = cels_fahr(cels)
-    # else:
-    #     dht_temp = 0
-    #     dht_humidity = 0
-    # return dht_temp, dht_humidity
     dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
     while cels and dht_humidity == False:
+        checkDebug("*** Unable to get DHT values! ***")
         time.sleep(2)
         dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
     dht_temp = cels_fahr(cels)
@@ -243,7 +237,7 @@ try:
                           "check the system as soon as possible!" % str(cpu_temp)
                 send_email('Shutdown', message)
                 checkDebug('CPU Temp to high, system is shutting down.')
-                time.sleep(30)
+                time.sleep(15)
 
             GPIO.cleanup()
             os.system('shutdown -h now')
@@ -259,13 +253,13 @@ try:
             print("Unable to connect to Adafruit.io")
         finally:
             if message_service:
-                if dht_temp != 0 and dht_temp <= 40 or dht_temp >= 90:
+                if dht_temp <= 40 or dht_temp >= 90:
                     message = "The temperature in the greenhouse is %s.  Please take " \
                               "whatever steps are needed to correct this before the " \
                               "plants are damaged." % str(dht_temp)
-                    send_email('Temperature out of range!', message)
+                    send_email('Greenhouse temp is to high/low', message)
             if message_service:
-                if dht_temp >= 85 and dht_humidity >= 85:
+                if dht_temp >= 80 and dht_humidity >= 80:
                     message = "The humidity of %s is becoming to high in conjunction " \
                               "with the current temperature of %s. Please take action " \
                               "to  correct this issue." % str(dht_humidity) % str(dht_temp)
