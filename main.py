@@ -161,12 +161,18 @@ def getDHT():
     the sensor can't be reliably read (timing is critical to read the sensor).
     Temp is converted to Fahrenheit.
     """
+    # dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    # if cels and dht_humidity:
+    #     dht_temp = cels_fahr(cels)
+    # else:
+    #     dht_temp = 0
+    #     dht_humidity = 0
+    # return dht_temp, dht_humidity
     dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
-    if cels and dht_humidity:
-        dht_temp = cels_fahr(cels)
-    else:
-        dht_temp = 0
-        dht_humidity = 0
+    while cels and dht_humidity == False:
+        time.sleep(2)
+        dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    dht_temp = cels_fahr(cels)
     return dht_temp, dht_humidity
 
 
@@ -289,9 +295,14 @@ try:
             checkDebug('Solar Panel volts: ' + str(sol_volt_v))
             checkDebug('Solar Panel current: ' + str(sol_curr_ma))
 
-        # Get battery voltage and current.  The value is set to two decimal places.
+        # Get battery voltage and current.  bat_curr_ma is multiplied by -1 to flip
+        # the value in order to show the correct current status.  This is done because
+        # when the solar panel is charging the battery the value shows as a negative
+        # and when not charging shows as a positive.
+        # The value is set to two decimal places.
         try:
             bat_volt_v, bat_curr_ma = getBat()
+            bat_curr_ma *= -1
             aio.send('greenhouse-bat-volt', '{:.2f}'.format(bat_volt_v))
             aio.send('greenhouse-bat-current', '{:.2f}'.format(bat_curr_ma))
         except IOError:

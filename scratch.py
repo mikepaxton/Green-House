@@ -1,18 +1,6 @@
-import datetime
-from astral import Astral
-
-a = Astral()
-a.solar_depression = 'civil'
-
-l = Location(('Lincoln City', 'USA', 44.9722, 124.0111, 'US/Pacific', 0))
-l.sun()
-
-city = a[city_name]
-
-
-print('Information for %s/%s\n' % (city_name, city.region))
-
-sun = city.sun(date=datetime.datetime.now(), local=True)
-
-print('Sunrise: %s' % str(sun['sunrise']))
-print('Sunset:  %s' % str(sun['sunset']))
+    dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    while cels and dht_humidity == False:
+        time.sleep(2)
+        dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
+    dht_temp = cels_fahr(cels)
+    return dht_temp, dht_humidity
