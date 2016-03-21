@@ -242,7 +242,8 @@ try:
             os.system('shutdown -h now')
 
         # Grab DHT's temp and humidity. Function continues to try getting readings so
-        # except passes.  The value is set to two decimal places.
+        # except passes.  The value is set to two decimal places.  Message Service is
+        # then checked.
         try:
             dht_temp, dht_humidity = getDHT()
             aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
