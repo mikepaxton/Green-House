@@ -249,13 +249,14 @@ try:
         # then checked.
         try:
             dht_temp, dht_humidity = getDHT()
-            aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
-            aio.send('greenhouse-humidity', '{:.2f}'.format(dht_humidity))
+            if dht_temp != 0:
+                aio.send('greenhouse-temperature', '{:.2f}'.format(dht_temp))
+                aio.send('greenhouse-humidity', '{:.2f}'.format(dht_humidity))
         except IOError:
             print("Unable to connect to Adafruit.io")
         finally:
             if message_service:
-                if dht_temp <= 40 or dht_temp >= 90:
+                if dht_temp !=0 and dht_temp <= 40 or dht_temp >= 90:
                     message = "The temperature in the greenhouse is %s.  Please take " \
                               "whatever steps are needed to correct this before the " \
                               "plants are damaged." % str(dht_temp)
