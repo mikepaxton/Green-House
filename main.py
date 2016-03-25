@@ -107,7 +107,7 @@ def sunlight():
     greenhouse = ephem.Observer()
 
     # PyEphem takes and returns only UTC times.
-    greenhouse.date = datetime.datetime.now(pytz.timezone(tz))
+    greenhouse.date = datetime.datetime.now() + datetime.timedelta(hours=-8)
 
     greenhouse.lon = str(longitude)
     greenhouse.lat = str(latitude)
