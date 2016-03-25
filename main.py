@@ -27,19 +27,20 @@ from Subfact_ina219 import INA219
 from ConfigParser import SafeConfigParser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import ephem
 
 
+# TODO: Find a means of trying to get DHT sensor value repeatedly until captured.
 # TODO: Create a LCD control interface using tkinter or pygame
 # TODO: Incorporate Python logging Module into controls
 # TODO: Find a logging website other than io.adafruit for greater logging capabilities
 # TODO: Find a decent light sensor and incorporate it into program
 # TODO: Devise a means of checking the battery state before operating the fans
-# TODO: Incorporate two or maybe three DHT sensors for better greenhouse coverage
 # TODO: Incorporate PowerSwitch Tail to turn a heater on and off
 # TODO: Modify fan code so both fans only come on during daylight
 # TODO: Create a warning message system for events such as high/low temp, low bat. etc...
 
-# Global stuff
+# Global config stuff
 #tsl = TSL2561()
 config = SafeConfigParser()
 config.read('config.cfg')
@@ -51,18 +52,26 @@ DHT_TYPE = Adafruit_DHT.DHT22
 DHT_PIN = config.getint('defaults', 'dht_pin')
 mysqlUpdate = config.getboolean('database', 'mysqlUpdate')  # Are we using database?
 max_cpu_temp = config.getint('defaults', 'max_cpu_temp')
-temp_threshold = config.getint('fans', 'exhaust_fan_on')
-temp_norm = config.getint('fans', 'exhaust_fan_off')
-circulate_temp = config.getint('fans', 'circulate_temp')
+exhaustOn = config.getint('environment', 'exhaust_fan_on')
+exhaustOff = config.getint('environment', 'exhaust_fan_off')
+circulate_temp = config.getint('environment', 'circulate_temp')
 message_service = config.getboolean('email', 'send_email')
+dayTempHigh = config.getint('environment', 'day_temp_high')
+dayTempLow = config.getint('environment', 'day_temp_low')
+nightTempHigh = config.getint('environment', 'night_temp_high')
+nightTempLow = config.getint('environment', 'night_temp_low')
+heaterPin = config.getint('defaults', 'heaterPin')
+longitude = config.getfloat('location', 'longitude')
+latitude = config.getfloat('location', 'latitude')
+altitude = config.getint('location', 'altitude')
 
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
-exhaust_fan = config.getint('fans', 'exhaust_fan_pin')
+exhaust_fan = config.getint('environment', 'exhaust_fan_pin')
 GPIO.setup(exhaust_fan, GPIO.OUT)
 GPIO.output(exhaust_fan, GPIO.HIGH)
-circulate_fan = config.getint('fans', 'circulate_fan_pin')
+circulate_fan = config.getint('environment', 'circulate_fan_pin')
 GPIO.setup(circulate_fan, GPIO.OUT)
 GPIO.output(circulate_fan, GPIO.HIGH)
 
@@ -80,16 +89,45 @@ checkDebug('Adafruit aio key: ' + str(ADAFRUIT_IO_KEY))
 checkDebug('DHT pin used: ' + str(DHT_PIN))
 checkDebug('Using Database: ' + str(mysqlUpdate))
 checkDebug('Update interval in seconds: ' + str(interval))
-checkDebug('Fan ON Temp: ' + str(temp_threshold))
-checkDebug('Fan OFF Temp: ' + str(temp_norm))
+checkDebug('Fan ON Temp: ' + str(exhaustOn))
+checkDebug('Fan OFF Temp: ' + str(exhaustOff))
 checkDebug('Send email messages: ' + str(message_service))
+checkDebug('Longitude: ' + str(longitude))
+checkDebug('Latitude: ' + str(latitude))
+checkDebug('Altitude: ' + str(altitude))
 
 
 # Main Functions
+def sunlight():
+    """ Using PyEphum to calculate sunrise and sunset
+    """
+    # Make an observer
+    greenhouse = ephem.Observer()
+
+    # PyEphem takes and returns only UTC times. 15:00 is noon in Fredericton
+    greenhouse.date = datetime.datetime.now()
+
+    # Location of Fredericton, Canada
+    greenhouse.lon = str(longitude)  # Note that lon should be in string format
+    greenhouse.lat = str(latitude)  # Note that lat should be in string format
+
+    # Elevation of Fredericton, Canada, in metres
+    greenhouse.elev = altitude
+
+    # To get U.S. Naval Astronomical Almanac values, use these settings
+    #greenhouse.pressure = 0
+    #greenhouse.horizon = '-0:34'
+
+    sunrise = greenhouse.previous_rising(ephem.Sun())  # Sunrise
+    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)  # Solar noon
+    sunset = greenhouse.next_setting(ephem.Sun())  # Sunset
+    return sunrise, sunset, noon
+
+
 def dbUpdate():
     """ Open a connection to mysql database using the MySQLdb library.  The database
     can be either local or remote.  If remote you must change both the dbaddress and
-    the port number to that of remote. Changed the database connection information
+     port number to that of remote. Changed the database connection information
     over to the config file.  Note: dbPort is not implemented in code yet.
     """
     dbAddress = config.get('database', 'dbAddress')
@@ -155,15 +193,12 @@ def cels_fahr(cels):
 
 
 def getDHT():
-    """ Attempt to get sensor reading of DHT.  If it's unable it will wait a couple of
-    seconds and then try again until it succeeds. This can happen if the CPU is under a
-    lot of load and the sensor can't be reliably read (timing is critical to read the
-    sensor).
+    """ Currently only trying to get the DHT sensor value once, if it fails I assign a 0
+    value to both the temp and humidity.
     Temp is converted to Fahrenheit.
     """
     dht_humidity, cels = Adafruit_DHT.read(DHT_TYPE, DHT_PIN)
     if cels and dht_humidity:
-        print type(cels)
         dht_temp = cels_fahr(cels)
     else:
         checkDebug("*** Unable to get DHT values! ***")
@@ -324,14 +359,12 @@ try:
         else:
             checkDebug('Database Update Skipped')
 
-        # Check both temp ranges from config file.  The dht_temp must be equal to or
-        # higher than threshold but not lower than the norm for exhaust to run.
-        # Must convert both temp ranges to an integer as they are brought from config
-        # file as strings.
-
-        if dht_temp >= temp_threshold and dht_temp > temp_norm:
+        # Check current temp against exhaust fan on and off temp set in config file.
+        # The dht_temp must be equal to or higher than exhaustOn but not lower than
+        # exhaustOff for fan to run.
+        if dht_temp >= exhaustOn and dht_temp > exhaustOff:
             GPIO.output(exhaust_fan, GPIO.LOW)
-            checkDebug('Exhaust fans is ON')
+            checkDebug('Exhaust fan is ON')
         else:
             GPIO.output(exhaust_fan, GPIO.HIGH)
             checkDebug('Exhaust fan is OFF')
@@ -344,6 +377,14 @@ try:
         else:
             GPIO.output(circulate_fan, GPIO.HIGH)
             checkDebug('Circulate fan is OFF')
+        # Check for sunrise and sunset
+        try:
+            sunrise, sunset, noon = sunlight()
+            print("Sunrise: " + str(sunrise))
+            print("Noon: " + str(noon))
+            print("Sunset: " + str(sunset))
+        finally:
+            checkDebug("Nothing")
 
         time.sleep(float(interval))
 
