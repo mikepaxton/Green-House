@@ -107,15 +107,16 @@ def sunlight():
     greenhouse = ephem.Observer()
 
     # PyEphem takes and returns only UTC times.
-    greenhouse.date = datetime.datetime.now()
+    date = datetime.datetime.now()
+    greenhouse.date = date + datetime.timedelta(hours=-8)
 
     greenhouse.lon = str(longitude)
     greenhouse.lat = str(latitude)
     greenhouse.elev = altitude  # Should be in meters
 
-    sunrise = greenhouse.previous_rising(ephem.Sun()) + datetime.timedelta(hours=-8)
-    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise) + datetime.timedelta(hours=-8)
-    sunset = greenhouse.next_setting(ephem.Sun()) + datetime.timedelta(hours=-8)
+    sunrise = greenhouse.previous_rising(ephem.Sun())
+    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
+    sunset = greenhouse.next_setting(ephem.Sun())
     return sunrise, sunset, noon
 
 
