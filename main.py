@@ -96,6 +96,7 @@ checkDebug('Send email messages: ' + str(message_service))
 checkDebug('Longitude: ' + str(longitude))
 checkDebug('Latitude: ' + str(latitude))
 checkDebug('Altitude: ' + str(altitude))
+checkDebug('Timezone: ' + str(tz))
 
 
 # Main Functions
@@ -105,23 +106,16 @@ def sunlight():
     # Make an observer
     greenhouse = ephem.Observer()
 
-    # PyEphem takes and returns only UTC times. 15:00 is noon in Fredericton
+    # PyEphem takes and returns only UTC times.
     greenhouse.date = datetime.datetime.now(pytz.timezone(tz))
 
-    # Location of Fredericton, Canada
-    greenhouse.lon = str(longitude)  # Note that lon should be in string format
-    greenhouse.lat = str(latitude)  # Note that lat should be in string format
+    greenhouse.lon = str(longitude)
+    greenhouse.lat = str(latitude)
+    greenhouse.elev = altitude  # Should be in meters
 
-    # Elevation of Fredericton, Canada, in metres
-    greenhouse.elev = altitude
-
-    # To get U.S. Naval Astronomical Almanac values, use these settings
-    #greenhouse.pressure = 0
-    #greenhouse.horizon = '-0:34'
-
-    sunrise = greenhouse.previous_rising(ephem.Sun())  # Sunrise
-    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)  # Solar noon
-    sunset = greenhouse.next_setting(ephem.Sun())  # Sunset
+    sunrise = greenhouse.previous_rising(ephem.Sun())
+    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
+    sunset = greenhouse.next_setting(ephem.Sun())
     return sunrise, sunset, noon
 
 
