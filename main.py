@@ -28,6 +28,7 @@ from ConfigParser import SafeConfigParser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import ephem
+import pytz
 
 
 # TODO: Find a means of trying to get DHT sensor value repeatedly until captured.
@@ -64,7 +65,7 @@ heaterPin = config.getint('defaults', 'heaterPin')
 longitude = config.getfloat('location', 'longitude')
 latitude = config.getfloat('location', 'latitude')
 altitude = config.getint('location', 'altitude')
-
+tz = config.get('location', 'timezone')
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
@@ -105,7 +106,7 @@ def sunlight():
     greenhouse = ephem.Observer()
 
     # PyEphem takes and returns only UTC times. 15:00 is noon in Fredericton
-    greenhouse.date = datetime.datetime.now()
+    greenhouse.date = datetime.datetime.now(pytz.timezone(tz))
 
     # Location of Fredericton, Canada
     greenhouse.lon = str(longitude)  # Note that lon should be in string format
