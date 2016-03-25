@@ -108,6 +108,7 @@ def sunlight():
 
     # PyEphem takes and returns only UTC times.
     greenhouse.date = datetime.datetime.now()
+    print ephem.localtime(greenhouse.date)
 
     greenhouse.lon = str(longitude)
     greenhouse.lat = str(latitude)
