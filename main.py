@@ -107,8 +107,7 @@ def sunlight():
     greenhouse = ephem.Observer()
 
     # PyEphem takes and returns only UTC times.
-    date = datetime.datetime.now()
-    greenhouse.date = date + datetime.timedelta(hours=-8)
+    greenhouse.date = datetime.datetime.now()
 
     greenhouse.lon = str(longitude)
     greenhouse.lat = str(latitude)
@@ -376,11 +375,10 @@ try:
         # Check for sunrise and sunset
         try:
             sunrise, sunset, noon = sunlight()
-            print("Sunrise: " + str(sunrise))
-            print("Noon: " + str(noon))
-            print("Sunset: " + str(sunset))
         finally:
-            checkDebug("Nothing")
+            checkDebug("Sunrise: " + str(sunrise))
+            checkDebug("Noon: " + str(noon))
+            checkDebug("Sunset: " + str(sunset))
 
         time.sleep(float(interval))
 
