@@ -122,9 +122,9 @@ def sunlight():
     noon = datetime.strptime(noon, '%b %d %Y %I:%M%p')
     sunset = datetime.strptime(sunset, '%b %d %Y %I:%M%p')
 
-    sunrise = sunrise + datetime.timedelta(-8)
-    noon = noon + datetime.timedelta(-8)
-    sunset = sunset + datetime.timedelta(-8)
+    # sunrise = sunrise + datetime.timedelta(-8)
+    # noon = noon + datetime.timedelta(-8)
+    # sunset = sunset + datetime.timedelta(-8)
 
     return sunrise, sunset, noon
 
