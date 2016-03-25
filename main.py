@@ -117,6 +117,15 @@ def sunlight():
     sunrise = greenhouse.previous_rising(ephem.Sun())
     noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
     sunset = greenhouse.next_setting(ephem.Sun())
+
+    sunrise = datetime.strptime(sunrise, '%b %d %Y %I:%M%p')
+    noon = datetime.strptime(noon, '%b %d %Y %I:%M%p')
+    sunset = datetime.strptime(sunset, '%b %d %Y %I:%M%p')
+
+    sunrise = datetime.timedelta(-8)
+    noon = datetime.timedelta(-8)
+    sunset = datetime.timedelta(-8)
+
     return sunrise, sunset, noon
 
 
