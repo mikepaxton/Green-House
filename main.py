@@ -386,10 +386,11 @@ try:
         # Check for sunrise and sunset
         try:
             sunrise, sunset, noon = sunlight()
-        finally:
             checkDebug("Sunrise: " + str(sunrise))
             checkDebug("Noon: " + str(noon))
             checkDebug("Sunset: " + str(sunset))
+        finally:
+            print("Finally run")
 
         time.sleep(float(interval))
 
