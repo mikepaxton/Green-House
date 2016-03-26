@@ -125,7 +125,7 @@ def sunlight():
     sunrise = strSunrise + datetime.timedelta(hours=-tz)
     noon = strNoon + datetime.timedelta(hours=-tz)
     sunset = strSunset + datetime.timedelta(hours=-tz)
-    print sunrise
+    print type(sunrise)
 
     return sunrise, sunset, noon
 
