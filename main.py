@@ -64,7 +64,7 @@ heaterPin = config.getint('defaults', 'heaterPin')
 longitude = config.getfloat('location', 'longitude')
 latitude = config.getfloat('location', 'latitude')
 altitude = config.getint('location', 'altitude')
-tz = config.get('location', 'timezone')
+tz = config.getint('location', 'timezone')
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
