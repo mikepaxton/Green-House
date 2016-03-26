@@ -28,7 +28,6 @@ from ConfigParser import SafeConfigParser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import ephem
-import pytz
 
 
 # TODO: Find a means of trying to get DHT sensor value repeatedly until captured.
@@ -114,17 +113,17 @@ def sunlight():
     greenhouse.lat = str(latitude)
     greenhouse.elev = altitude  # Should be in meters
 
-    sunrise = greenhouse.previous_rising(ephem.Sun())
-    noon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
-    sunset = greenhouse.next_setting(ephem.Sun())
+    utcSunrise = greenhouse.previous_rising(ephem.Sun())
+    utcNoon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
+    utcSunset = greenhouse.next_setting(ephem.Sun())
 
-    # sunrise = datetime.strptime(sunrise, '%b %d %Y %I:%M%p')
-    # noon = datetime.strptime(noon, '%b %d %Y %I:%M%p')
-    # sunset = datetime.strptime(sunset, '%b %d %Y %I:%M%p')
+    sunrise = datetime.datetime.strptime(utcSunrise, '%Y/%m/%d %H:%M:%S')
+    noon = datetime.datetime.strptime(utcNoon, '%Y/%m/%d %H:%M:%S')
+    sunset = datetime.datetime.strptime(utcSunset, '%Y/%m/%d %H:%M:%S')
 
-    # sunrise = sunrise + datetime.timedelta(-8)
-    # noon = noon + datetime.timedelta(-8)
-    # sunset = sunset + datetime.timedelta(-8)
+    sunrise = sunrise + datetime.timedelta(hours=-tz)
+    noon = noon + datetime.timedelta(hours=-tz)
+    sunset = sunset + datetime.timedelta(hours=-tz)
 
     return sunrise, sunset, noon
 
