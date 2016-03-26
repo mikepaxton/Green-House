@@ -117,14 +117,14 @@ def sunlight():
     utcNoon = greenhouse.next_transit(ephem.Sun(), start=utcSunrise)
     utcSunset = greenhouse.next_setting(ephem.Sun())
 
-    sunrise = datetime.datetime.strptime(str(utcSunrise), '%Y/%m/%d %H:%M:%S')
-    noon = datetime.datetime.strptime(str(utcNoon), '%Y/%m/%d %H:%M:%S')
-    sunset = datetime.datetime.strptime(str(utcSunset), '%Y/%m/%d %H:%M:%S')
+    strSunrise = datetime.datetime.strptime(str(utcSunrise), '%Y/%m/%d %H:%M:%S')
+    strNoon = datetime.datetime.strptime(str(utcNoon), '%Y/%m/%d %H:%M:%S')
+    strSunset = datetime.datetime.strptime(str(utcSunset), '%Y/%m/%d %H:%M:%S')
     print("pre-sunrise: " + str(sunrise))
 
-    sunrise = sunrise + datetime.timedelta(hours=-tz)
-    noon = noon + datetime.timedelta(hours=-tz)
-    sunset = sunset + datetime.timedelta(hours=-tz)
+    sunrise = strSunrise + datetime.timedelta(hours=-tz)
+    noon = strNoon + datetime.timedelta(hours=-tz)
+    sunset = strSunset + datetime.timedelta(hours=-tz)
     print sunrise
 
     return sunrise, sunset, noon
