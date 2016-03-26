@@ -114,7 +114,7 @@ def sunlight():
     greenhouse.elev = altitude  # Should be in meters
 
     utcSunrise = greenhouse.previous_rising(ephem.Sun())
-    utcNoon = greenhouse.next_transit(ephem.Sun(), start=sunrise)
+    utcNoon = greenhouse.next_transit(ephem.Sun(), start=utcSunrise)
     utcSunset = greenhouse.next_setting(ephem.Sun())
 
     sunrise = datetime.datetime.strptime(str(utcSunrise), '%Y/%m/%d %H:%M:%S')
