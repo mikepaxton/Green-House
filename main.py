@@ -120,7 +120,7 @@ def sunlight():
     strSunrise = datetime.datetime.strptime(str(utcSunrise), '%Y/%m/%d %H:%M:%S')
     strNoon = datetime.datetime.strptime(str(utcNoon), '%Y/%m/%d %H:%M:%S')
     strSunset = datetime.datetime.strptime(str(utcSunset), '%Y/%m/%d %H:%M:%S')
-    print("pre-sunrise: " + str(sunrise))
+    print("pre-sunrise: " + str(strSunrise))
 
     sunrise = strSunrise + datetime.timedelta(hours=-tz)
     noon = strNoon + datetime.timedelta(hours=-tz)
