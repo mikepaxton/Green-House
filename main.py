@@ -43,7 +43,7 @@ import ephem
 # Global config stuff
 #tsl = TSL2561()
 config = SafeConfigParser()
-config.read('config.cfg')
+config.read('/home/pi/Projects/Greenhouse/config.cfg')
 interval = config.getint('defaults', 'interval')  # Get sensor updating interval
 debug = config.getboolean('defaults', 'debug')  # debug print to console
 ADAFRUIT_IO_KEY = config.get('defaults', 'aio_key')  # Import Adafruit aio Key
@@ -125,7 +125,6 @@ def sunlight():
     sunrise = strSunrise + datetime.timedelta(hours=-tz)
     noon = strNoon + datetime.timedelta(hours=-tz)
     sunset = strSunset + datetime.timedelta(hours=-tz)
-    print type(sunrise)
 
     return sunrise, sunset, noon
 
