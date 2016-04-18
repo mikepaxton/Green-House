@@ -303,9 +303,9 @@ try:
                     send_email('Greenhouse temp is to high/low', message)
             if message_service:
                 if dht_temp >= 80 and dht_humidity >= 80:
-                    message = "The humidity of %s is becoming to high in conjunction " \
-                              "with the current temperature of %s. Please take action " \
-                              "to  correct this issue." % str(dht_humidity) % str(dht_temp)
+                    message = "The humidity is becoming to high in conjunction " \
+                              "with the current temperature. Please take action " \
+                              "to  correct this issue."
                     send_email("High humidity!", message)
             checkDebug('DHT Temp: ' + str(dht_temp))
             checkDebug('DHT Humidity: ' + str(dht_humidity))
