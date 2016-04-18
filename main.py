@@ -302,7 +302,7 @@ try:
                               "plants are damaged." % str(dht_temp)
                     send_email('Greenhouse temp is to high/low', message)
             if message_service:
-                if dht_temp >= 80 and dht_humidity >= 80:
+                if dht_temp >= 85 and dht_humidity >= 85:
                     message = "The humidity is becoming to high in conjunction " \
                               "with the current temperature. Please take action " \
                               "to  correct this issue."
