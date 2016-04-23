@@ -389,7 +389,7 @@ try:
             checkDebug("Noon: " + str(noon))
             checkDebug("Sunset: " + str(sunset))
         finally:
-            print("Finally run")
+            pass
 
         time.sleep(float(interval))
 
