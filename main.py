@@ -27,7 +27,6 @@ from Subfact_ina219 import INA219
 from ConfigParser import SafeConfigParser
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import ephem
 
 
 # TODO: Find a means of trying to get DHT sensor value repeatedly until captured.
@@ -61,10 +60,6 @@ dayTempLow = config.getint('environment', 'day_temp_low')
 nightTempHigh = config.getint('environment', 'night_temp_high')
 nightTempLow = config.getint('environment', 'night_temp_low')
 heaterPin = config.getint('defaults', 'heaterPin')
-longitude = config.getfloat('location', 'longitude')
-latitude = config.getfloat('location', 'latitude')
-altitude = config.getint('location', 'altitude')
-tz = config.getint('location', 'timezone')
 
 # Setup and initiate fans on GPIO pins.  Fans should be connected to a relay board.
 GPIO.setmode(GPIO.BCM)
@@ -92,41 +87,8 @@ checkDebug('Update interval in seconds: ' + str(interval))
 checkDebug('Fan ON Temp: ' + str(exhaustOn))
 checkDebug('Fan OFF Temp: ' + str(exhaustOff))
 checkDebug('Send email messages: ' + str(message_service))
-checkDebug('Longitude: ' + str(longitude))
-checkDebug('Latitude: ' + str(latitude))
-checkDebug('Altitude: ' + str(altitude))
-checkDebug('Timezone: ' + str(tz))
-
 
 # Main Functions
-def sunlight():
-    """ Using PyEphum to calculate sunrise and sunset
-    """
-    # Make an observer
-    greenhouse = ephem.Observer()
-
-    # PyEphem takes and returns only UTC times.
-    greenhouse.date = datetime.datetime.now()
-    print greenhouse.date
-
-    greenhouse.lon = str(longitude)
-    greenhouse.lat = str(latitude)
-    greenhouse.elev = altitude  # Should be in meters
-
-    utcSunrise = greenhouse.previous_rising(ephem.Sun())
-    utcNoon = greenhouse.next_transit(ephem.Sun(), start=utcSunrise)
-    utcSunset = greenhouse.next_setting(ephem.Sun())
-
-    strSunrise = datetime.datetime.strptime(str(utcSunrise), '%Y/%m/%d %H:%M:%S')
-    strNoon = datetime.datetime.strptime(str(utcNoon), '%Y/%m/%d %H:%M:%S')
-    strSunset = datetime.datetime.strptime(str(utcSunset), '%Y/%m/%d %H:%M:%S')
-    print("pre-sunrise: " + str(strSunrise))
-
-    sunrise = strSunrise + datetime.timedelta(hours=-tz)
-    noon = strNoon + datetime.timedelta(hours=-tz)
-    sunset = strSunset + datetime.timedelta(hours=-tz)
-
-    return sunrise, sunset, noon
 
 
 def dbUpdate():
@@ -382,14 +344,6 @@ try:
         else:
             GPIO.output(circulate_fan, GPIO.HIGH)
             checkDebug('Circulate fan is OFF')
-        # Check for sunrise and sunset
-        try:
-            sunrise, sunset, noon = sunlight()
-            checkDebug("Sunrise: " + str(sunrise))
-            checkDebug("Noon: " + str(noon))
-            checkDebug("Sunset: " + str(sunset))
-        finally:
-            pass
 
         time.sleep(float(interval))
 
